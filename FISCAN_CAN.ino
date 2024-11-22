@@ -22,6 +22,8 @@ void onBodyRX(const CAN_message_t& frame) {
   }
   Serial.println();
 #endif
+  isConnectedCAN = true;
+  lastTransmission = millis();
 
   switch (frame.id) {
     case MOTOR1_ID:
@@ -45,12 +47,118 @@ void onBodyRX(const CAN_message_t& frame) {
       vehicleEML = bitRead(frame.buf[1], 5);
       vehicleEPC = bitRead(frame.buf[1], 6);
       break;
+    case fisCuntrol_ID:
+      //APP_MSG_STATUS = frame.buf[0];  //
+      //frame.buf[1] = 0x00;                 //
+      haldexEngagement = frame.buf[2];     //
+      lockTarget = frame.buf[3];           //
+      vehicleSpeed = frame.buf[4];         //
+      state.mode_override = frame.buf[5];  //
+      if (!hasOpenHaldex) {
+        lastMode = frame.buf[6];  //
+      }
+      pedValue = frame.buf[7];  //
+      hasOpenHaldex = true;
+      break;
     default:
       // do nothing...
       break;
   }
 }
 
-void parseCAN(){
+void parseCAN() {
+#if 0  //serialDebug
+  Serial.println();
+  Serial.print("vehicleRPM: ");
+  Serial.println(vehicleRPM);
 
+  Serial.print("vehicleSpeed: ");
+  Serial.println(vehicleSpeed);
+
+  Serial.print("vehicleEML: ");
+  Serial.println(vehicleEML);
+
+  Serial.print("vehicleEPC: ");
+  Serial.print(vehicleEPC);
+#endif
+
+  if (millis() - lastTransmission > btRefresh) {
+    hasOpenHaldex = false;
+  }
+
+  if (showHaldex) {
+    char buf[20];
+    char buf1[20];
+    char buf2[40];
+    char buf3[40];
+    char buf4[40];
+    char buf5[40];
+
+    switch (lastMode) {
+      case 0:
+        sprintf(buf, "Mode: Stock");
+        break;
+      case 1:
+        sprintf(buf, "Mode: FWD");
+        break;
+      case 2:
+        sprintf(buf, "Mode: 5050");
+        break;
+      default:
+        sprintf(buf, "Error!");
+        break;
+    }
+    if (hasOpenHaldex) {
+      sprintf(buf1, "Conn.: Yes");
+    } else {
+      sprintf(buf1, "Conn.: No");
+    }
+
+    sprintf(buf2, "Act. Lock: %d%", haldexEngagement);
+    sprintf(buf3, "Req. Lock: %d%", lockTarget);
+    sprintf(buf4, "Speed: %d%", vehicleSpeed);
+    sprintf(buf5, "Pedal: %d%", pedValue);
+
+    fisLine[0] = String(buf1);
+    fisLine[1] = String(buf);
+    fisLine[2] = String(buf2);
+    fisLine[3] = String(buf3);
+    fisLine[4] = String(buf4);
+    fisLine[5] = String(buf5);
+  } else {
+    fisLine[0] = "RPM: " + String(vehicleRPM);
+    fisLine[1] = "Speed: " + String(vehicleSpeed);
+    fisLine[2] = "EML: " + String(vehicleEML);
+    fisLine[3] = "EPC: " + String(vehicleEPC);
+  }
+}
+
+void broadcastOpenHaldex() {
+  switch (lastMode) {
+    case 0:
+      state.mode = MODE_STOCK;
+      break;
+    case 1:
+      state.mode = MODE_FWD;
+      break;
+    case 2:
+      state.mode = MODE_5050;
+      break;
+  }
+
+  CAN_message_t broadcastCAN;  //0x7C0
+  broadcastCAN.id = openHaldex_ID;
+  broadcastCAN.len = 8;
+  broadcastCAN.buf[0] = lastMode;  //
+  broadcastCAN.buf[1] = 0x00;      //
+  broadcastCAN.buf[2] = 0x00;      //
+  broadcastCAN.buf[3] = 0x00;      //
+  broadcastCAN.buf[4] = 0x00;      //
+  broadcastCAN.buf[5] = 0x00;      //
+  broadcastCAN.buf[6] = 0x00;      //
+  broadcastCAN.buf[7] = 0x00;      //
+
+  if (!chassisCAN.write(broadcastCAN)) {              // write CAN frame from the body to the Haldex
+    Serial.println(F("Chassis CAN Write TX Fail!"));  // if writing is unsuccessful, there is something wrong with the Haldex(!) Possibly flash red LED?
+  }
 }

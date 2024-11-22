@@ -1,3 +1,5 @@
+/*
+
 void launchBluetooth() {
   if (hasHaldex) {
 #if serialDebug
@@ -81,7 +83,7 @@ void btReceiveStatus() {
     packet.data[8] = screenSoftwareVersion;
     packet.data[9] = SERIAL_PACKET_END;
     packet.len = 10;
-  */
+  
 
   lastTransmission = millis();
 
@@ -106,3 +108,5 @@ void btReceiveStatus() {
     boardSoftwareVersion = btIncoming[8];
   }
 }
+
+*/

@@ -1,15 +1,16 @@
 /* 
-FISCuntrol V3.0 - a MK4 based FIS controller based on an ESP32
+FISCuntrol V3.0 - a MK4 based FIS controller based on an ESP32.  
 > Uses the stock buttons for toggling menus
-> Supports CAN-BUS and K-line diag protocols for gathering data
+> Supports CAN-BUS and K-line diagnostic protocols for gathering data
 > Supports OpenHaldex 
 > Optional RTC for special dates & custom messages
+> Built-in Bluetooth for optional OpenHaldex 
 > *** Boot logos to be added ***
 */
 #include "FISCAN_config.h"
 
-#define SCREEN_SIZE TLBFISLib::FULLSCREEN  //try changing this to TLBFISLib::FULLSCREEN
-uint8_t measurements[3 * 4];
+extern uint8_t readBlock = 1;
+uint8_t measurements[29];
 
 void sendFunctionFIS(uint8_t data) {
   SPI_INSTANCE.beginTransaction(SPISettings(125000, MSBFIRST, SPI_MODE3));
@@ -20,92 +21,163 @@ void beginFunctionFIS() {
   SPI_INSTANCE.begin();
 }
 
-//extern TLBFISLib FIS(ENA_PIN, sendFunctionFIS, beginFunctionFIS);  //optionally, an "endFunction" can also be provided; it would be called when executing end()
+// displays - LCD & FIS
 extern LiquidCrystal_I2C lcd(0x27, lcdRow, lcdColumn);  // set the LCD address to 0x27 for a 16 chars and 2 line display
-ESP32_CAN<RX_SIZE_256, TX_SIZE_16> chassisCAN;
-BluetoothSerial SerialBT;
-openhaldexState state;
+TLBFISLib FIS(fisENA, sendFunctionFIS, beginFunctionFIS);
 
+// communication - k-line & CAN
+ESP32_CAN<RX_SIZE_256, TX_SIZE_16> chassisCAN;
+// Debugging can be enabled in "configuration.h" in order to print connection-related info on the Serial Monitor.
 #if serialDebug
-extern KLineKWP1281Lib diag(beginFunction, endFunction, sendFunction, receiveFunction, TX_pin, is_full_duplex, &Serial);
+KLineKWP1281Lib diag(beginFunction, endFunction, sendFunction, receiveFunction, K_TX, is_full_duplex, &Serial);
 #else
-extern KLineKWP1281Lib diag(beginFunction, endFunction, sendFunction, receiveFunction, TX_pin, is_full_duplex);
+KLineKWP1281Lib diag(beginFunction, endFunction, sendFunction, receiveFunction, K_TX, is_full_duplex);
 #endif
 
-extern ClickButton stalkUpButton(stalkPushUp, LOW, CLICKBTN_PULLUP);
-extern ClickButton stalkDownButton(stalkPushDown, LOW, CLICKBTN_PULLUP);
-extern ClickButton stalkResetButton(stalkPushReset, LOW, CLICKBTN_PULLUP);
+// Bluetooth for OpenHaldex etc...
+//BluetoothSerial SerialBT;
+openhaldexState state;
+
+extern OneButton stalkUpButton(stalkPushUp, true);
+extern OneButton stalkDownButton(stalkPushDown, true);
+extern OneButton stalkResetButton(stalkPushReset, true);
 
 // for repeated tasks (write to EEP & send status)
-TickTwo tickbtSendStatus(btSendStatus, btRefresh);
+//TickTwo tickbtSendStatus(btSendStatus, btRefresh);
+TickTwo tickSendOpenHaldex(broadcastOpenHaldex, canRefresh);
+
+void IRAM_ATTR checkTicks() {
+  // include all buttons here to be checked
+  stalkUpButton.tick();     // just call tick() to check the state.
+  stalkDownButton.tick();   // just call tick() to check the state.
+  stalkResetButton.tick();  // just call tick() to check the state.
+}
 
 void setup() {
 #if serialDebug
   Serial.begin(115200);
-  Serial.println(F("ESP32 Init..."));
+  Serial.println(F("ESP32 Initialisation..."));
 #endif
-  tickbtSendStatus.start();  // begin ticker for BT Status
 
-  setupPins();               // set pin inputs/outputs, do output test if req.
-  setupButtons();            // set de-bounce times, etc
-  launchBoot();              // get boot screen and display (LCD or FIS)
-  launchConnections();       // begin connections (either k-line or CAN)
-  launchBluetooth();         // begin the bluetooth connection (for OpenHaldex)
+  setupPins();     // set pin inputs/outputs, do output test if req.
+  setupButtons();  // set de-bounce times, etc
+  //launchBluetooth();  // begin the bluetooth connection (for OpenHaldex)
+
+#if hasHaldex
+  //tickbtSendStatus.start();  // begin ticker for BT Status
+  tickSendOpenHaldex.start();  // begin ticker for BT Status
+#endif
 }
 
 void loop() {
-  tickbtSendStatus.update();  // refresh the BT Status ticker
-  ignitionState = digitalRead(ignitionMonitorPin); // check to see if the ignition has been turned on...
-  reviewButtons(); // check the stalk, see if they've been pressed...
+#if hasHaldex
+  //tickbtSendStatus.update();  // refresh the BT Status ticker
+  tickSendOpenHaldex.update();  // refresh the BT Status ticker
+#endif
+  ignitionState = HIGH;  //digitalRead(ignitionMonitorPin);  // check to see if the ignition has been turned on...
+  stalkUpButton.tick();
+  stalkDownButton.tick();
+  stalkResetButton.tick();
 
-  if (fisDisable) { mimickStalkButtons(); } // if FIS is disabled, do nothing but mimick the stalk buttons
+  if (fisDisable) {
+    mimickStalkButtons();
+  }
 
   if (ignitionState == LOW) { ignitionStateRunOnce = false; }  // if ignition signal is 'low', reset the state
 
-  if (ignitionState == HIGH && ignitionStateRunOnce == false) {  //&& !fisBeenToggled)
-    ignitionStateRunOnce = true;                                 // set ignStateRunOnce to stop redisplay of welcome message until ign. off.
+  if (ignitionState == HIGH && ignitionStateRunOnce == false && !fisDisable) {  //&& !fisBeenToggled)
+    ignitionStateRunOnce = true;                                                // set ignStateRunOnce to stop redisplay of welcome message until ign. off.
 
     launchBoot();
     launchConnections();
   }
 
-  // get data from ECU, either via. K-line or CAN
-  if (hasK) {
-    // read K-Line
-    showMeasurements(readBlock);
-  }
-
-  if (hasCAN) {
-    // read CAN
-    parseCAN();
-  }
-
-  // display data from above capture, either via. FIS or LCD
-  if (hasFIS) {
-    if (showHaldex) {
-
-    } else {
-      displayFIS();
+  if (!fisDisable) {
+    // get data from ECU, either via. K-line or CAN
+    if (hasK && !showHaldex) {
+      if (millis() - lastDataRetrieve >= logFrequency) {
+        lastDataRetrieve = millis();
+        // read K-Line
+        if (readBlock > 255) {
+          readBlock = 1;
+        }
+        showMeasurements(readBlock);
+      }
     }
-  }
 
-  if (hasLCD) {
-    if (showHaldex) {
-
-    } else {
-      displayLCD();
+    if (hasCAN || showHaldex) {
+      parseCAN();
     }
-  }
 
-  if (SerialBT.available()) {  // if anything comes in Bluetooth Serial
+    // display data from above capture, either via. FIS or LCD
+    if (hasFIS) {
+      if (hasK) {
+        if (lastBlock != readBlock) {
+          lastBlock = readBlock;
+          FIS.clear();
+        } else {
+          displayFIS();
+        }
+      }
+
+      if (hasCAN) {
+        if (lastBlock != readBlock) {
+          lastBlock = readBlock;
+          FIS.clear();
+        } else {
+          displayFIS();
+        }
+      }
+
+      if (hasHaldex) {
+        if (lastHaldex != lastMode) {
+          lastHaldex = lastMode;
+          FIS.clear();
+        } else {
+          displayFIS();
+        }
+      }
+    }
+
+    if (hasLCD) {
+      if (hasK) {
+        if (lastBlock != readBlock) {
+          lastBlock = readBlock;
+          lcd.clear();
+        } else {
+          displayLCD();
+        }
+      }
+
+      if (hasCAN) {
+        if (lastBlock != readBlock) {
+          lastBlock = readBlock;
+          lcd.clear();
+        } else {
+          displayLCD();
+        }
+      }
+
+      if (hasHaldex) {
+        if (lastHaldex != lastMode) {
+          lastHaldex = lastMode;
+          lcd.clear();
+        } else {
+          displayLCD();
+        }
+      }
+    }
+
+    /*if (SerialBT.available()) {  // if anything comes in Bluetooth Serial
 #if serialDebug
-    Serial.println(F("Got serial data..."));
+      Serial.println(F("Got serial data..."));
 #endif
-    btIncoming[10] = { 0 };
-    incomingLen = SerialBT.readBytesUntil(serialPacketEnd, btIncoming, 10);
-    if (incomingLen < 10) {
-      runOnce = false;
-    }
-    btReceiveStatus();
+      btIncoming[10] = { 0 };
+      incomingLen = SerialBT.readBytesUntil(serialPacketEnd, btIncoming, 10);
+      if (incomingLen < 9) {
+        runOnce = false;
+      }
+      btReceiveStatus();
+    }*/
   }
 }

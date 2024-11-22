@@ -29,10 +29,10 @@
   #define K_line Serial1
   #define TX_pin 18
 */
-
-  //#define K_line Serial2
-  //#define TX_pin 16
-
+/*
+  #define K_line Serial2
+  #define TX_pin 16
+*/
 /*
   #define K_line Serial3
   #define TX_pin 14

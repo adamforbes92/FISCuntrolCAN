@@ -31,13 +31,17 @@ void returnBootMessage() {
 
   // launch the RTC
   if (!rtc_time.begin()) {
+#if serialDebug
     Serial.println(F("Couldn't find RTC..."));
-    fisLine3 = "WELCOME";
-    fisLine4 = "ADAM!";
-    fisLine6 = strSmile;
+#endif
+    fisLine[3] = "WELCOME";
+    fisLine[4] = "ADAM!";
+    fisLine[6] = strSmile;
   }
   if (!rtc_time.isrunning()) {
+#if serialDebug
     Serial.println(F("RTC is NOT running, let's set the time!"));
+#endif
     rtc_time.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
 
@@ -50,29 +54,29 @@ void returnBootMessage() {
   // check through the array to see if there's a special date available
   for (i = 0; i < (sizeof(specialMessage) / sizeof(specialMessage[0])); i++) {
     if (specialMessage[i].specialDate == combinedDayMonthStr) {
-      fisLine3 = specialMessage[i].bootMessage1;
-      fisLine4 = specialMessage[i].bootMessage2;
-      fisLine6 = strSmile;
+      fisLine[3] = specialMessage[i].bootMessage1;
+      fisLine[4] = specialMessage[i].bootMessage2;
+      fisLine[6] = strSmile;
     }
   }
 
   // not found above, get time...
-  if (fisLine3 == "" || fisLine4 == "") {
+  if (fisLine[3] == "" || fisLine[4] == "") {
     switch (currentHour) {
       case 0 ... 12:
-        fisLine3 = "GOOD MORNING";
-        fisLine4 = strName;
-        fisLine6 = strSmile;
+        fisLine[3] = "GOOD MORNING";
+        fisLine[4] = strName;
+        fisLine[6] = strSmile;
         break;
       case 13 ... 18:
-        fisLine3 = "GOOD AFTERNOON";
-        fisLine4 = strName;
-        fisLine6 = strSmile;
+        fisLine[3] = "GOOD AFTERNOON";
+        fisLine[4] = strName;
+        fisLine[6] = strSmile;
         break;
       case 19 ... 24:
-        fisLine3 = "GOOD EVENING";
-        fisLine4 = strName;
-        fisLine6 = strSmile;
+        fisLine[3] = "GOOD EVENING";
+        fisLine[4] = strName;
+        fisLine[6] = strSmile;
         break;
     }
   }
