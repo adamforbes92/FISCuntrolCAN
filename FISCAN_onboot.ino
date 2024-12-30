@@ -84,7 +84,7 @@ void launchBoot() {
     if (hasFIS) {
       //bootFIS();
       FIS.clear();
-      FIS.drawBitmap(0, 0, 64, 88, finger, false);
+      FIS.drawBitmap(0, 0, 64, 88, MK4Golf, true);
       delay(bootTime);
     }
 
@@ -118,13 +118,21 @@ void launchConnections() {
     if (hasLCD) {
       lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print("CONNECTED!");
+      lcd.print("CONNECTING...");
     }
 
     if (diag.attemptConnect(connect_to_module, module_baud_rate) == KLineKWP1281Lib::SUCCESS) {
       isConnectedK = true;
     } else {
+      FIS.clear();
+      FIS.setFont(TLBFISLib::COMPACT);
+      FIS.setTextAlignment(TLBFISLib::LEFT);
+      FIS.writeText(0, 1, "FAILED");
+      FIS.writeText(0, 9, "K-LINE");
+      delay(bootTime / 2);
+
       isConnectedK = false;
+      pressStartReset();
     }
 
     //diag.connect(connect_to_module, module_baud_rate, false);

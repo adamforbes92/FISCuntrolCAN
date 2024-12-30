@@ -6,6 +6,8 @@ FISCuntrol V3.0 - a MK4 based FIS controller based on an ESP32.
 > Optional RTC for special dates & custom messages
 > Built-in Bluetooth for optional OpenHaldex 
 > *** Boot logos to be added ***
+    *Bitmaps can easily be generated with the https://javl.github.io/image2cpp/ tool.
+    *For halfscreen, the max visible size is 64x48, and for fullscreen it is 64x88.
 */
 #include "FISCAN_config.h"
 
