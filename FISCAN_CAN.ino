@@ -4,8 +4,6 @@ void canInit() {
   chassisCAN.begin();
   chassisCAN.setBaudRate(500000);
   chassisCAN.onReceive(onBodyRX);
-
-  // set filters up for focusing on only MOT1 / MOT 2?
 }
 
 void onBodyRX(const CAN_message_t& frame) {
@@ -48,7 +46,7 @@ void onBodyRX(const CAN_message_t& frame) {
       vehicleEPC = bitRead(frame.buf[1], 6);
       break;
     case fisCuntrol_ID:
-      //APP_MSG_STATUS = frame.buf[0];  //
+      //appMessageStatus = frame.buf[0];  //
       //frame.buf[1] = 0x00;                 //
       haldexEngagement = frame.buf[2];     //
       lockTarget = frame.buf[3];           //
@@ -81,10 +79,6 @@ void parseCAN() {
   Serial.print("vehicleEPC: ");
   Serial.print(vehicleEPC);
 #endif
-
-  if (millis() - lastTransmission > btRefresh) {
-    hasOpenHaldex = false;
-  }
 
   if (showHaldex) {
     char buf[20];

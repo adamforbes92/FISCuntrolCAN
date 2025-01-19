@@ -1,7 +1,12 @@
 void bootFIS() {
+#if serialDebug
+  Serial.println(F("Booting FIS..."));
+#endif
   FIS.begin();
   FIS.initScreen(screenSize);  // defined in config
-  //All commands have been moved to the drawScreen() function (defined below), so that the custom functions can also execute it.
+#if serialDebug
+  Serial.println(F("Booting FIS Complete!"));
+#endif
 }
 
 void displayFIS() {
@@ -53,4 +58,3 @@ void drawScreen() {
 
   //It is not necessary to reset the workspace, because an "error" event will automatically clear all custom workspaces.
 }
-

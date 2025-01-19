@@ -2,19 +2,26 @@ void setupPins() {
 #if serialDebug
   Serial.println(F("Defining Pin Inputs/Outputs..."));
 #endif
-  pinMode(stalkPushUpReturn, OUTPUT);     // Configure
-  pinMode(stalkPushDownReturn, OUTPUT);   // Configure TX of K-line as Digital Output (only required for Slow Init)
-  pinMode(stalkPushResetReturn, OUTPUT);  // Configure TX of K-line as Digital Output (only required for Slow Init)
+
+  // setup output pins for stalk buttons
+  pinMode(stalkPushUpReturn, OUTPUT);
+  pinMode(stalkPushDownReturn, OUTPUT);
+  pinMode(stalkPushResetReturn, OUTPUT);
 
   if (checkLED) {
     simulateOutputTest();
   }
 
-  pinMode(ignitionMonitorPin, INPUT);  // Configure TX of K-line as Digital Output (only required for Slow Init)
+  // set outputs HIGH to keep them 'off'
+  digitalWrite(stalkPushUpReturn, HIGH);
+  digitalWrite(stalkPushDownReturn, HIGH);
+  digitalWrite(stalkPushResetReturn, HIGH);
 
-  attachInterrupt(digitalPinToInterrupt(stalkPushUp), checkTicks, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(stalkPushDown), checkTicks, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(stalkPushReset), checkTicks, CHANGE);
+  pinMode(ignitionMonitorPin, INPUT);  // ignition signal - could be an interrupt, necessary?
+
+  attachInterrupt(digitalPinToInterrupt(stalkPushUp), checkTicks, FALLING);
+  attachInterrupt(digitalPinToInterrupt(stalkPushDown), checkTicks, FALLING);
+  attachInterrupt(digitalPinToInterrupt(stalkPushReset), checkTicks, FALLING);
 
 #if serialDebug
   Serial.println(F("Completed defining Pin Inputs/Outputs!"));
@@ -66,30 +73,19 @@ void launchBoot() {
           sprintf(combinedArray, "%s\n%s", combinedArray, buf1);  // with word space
         }
       }
-//sprintf(combinedArray, "%s", combinedArray, "\n");  // with word space
+
 #if serialDebug
       Serial.println(combinedArray);
 #endif
       FIS.writeMultiLineText(0, 15, combinedArray, false);
       delay(bootTime);
     }
-
-    if (hasLCD) {
-      bootLCD();
-      delay(bootTime);
-    }
   }
 
   if (showBootScreen == 2) {
     if (hasFIS) {
-      //bootFIS();
       FIS.clear();
-      FIS.drawBitmap(0, 0, 64, 88, MK4Golf, true);
-      delay(bootTime);
-    }
-
-    if (hasLCD) {
-      bootLCD();
+      FIS.drawBitmap(0, 0, 64, 88, MK4Golf, true);  // draw MK4 Golf FROM PROGMEM (true)!
       delay(bootTime);
     }
   }
@@ -112,30 +108,28 @@ void launchConnections() {
       FIS.clear();
       FIS.setFont(TLBFISLib::COMPACT);
       FIS.setTextAlignment(TLBFISLib::LEFT);
-      FIS.writeText(0, 1, "CONNECTING...");
+      FIS.writeText(0, 1, "CONNECTING TO");
+      FIS.writeText(0, 9, "K-LINE!");
     }
 
-    if (hasLCD) {
-      lcd.clear();
-      lcd.setCursor(0, 0);
-      lcd.print("CONNECTING...");
-    }
-
-    if (diag.attemptConnect(connect_to_module, module_baud_rate) == KLineKWP1281Lib::SUCCESS) {
+    if (diag.attemptConnect(K_Module, K_Baud) == KLineKWP1281Lib::SUCCESS) {
       isConnectedK = true;
+      FIS.clear();
+      FIS.setFont(TLBFISLib::COMPACT);
+      FIS.setTextAlignment(TLBFISLib::LEFT);
+      FIS.writeText(0, 1, "CONNECTED");
+      FIS.writeText(0, 9, "K-LINE!");
+      delay(bootTime / 2);
     } else {
+      isConnectedK = false;
       FIS.clear();
       FIS.setFont(TLBFISLib::COMPACT);
       FIS.setTextAlignment(TLBFISLib::LEFT);
       FIS.writeText(0, 1, "FAILED");
-      FIS.writeText(0, 9, "K-LINE");
+      FIS.writeText(0, 9, "K-LINE!");
       delay(bootTime / 2);
-
-      isConnectedK = false;
       pressStartReset();
     }
-
-    //diag.connect(connect_to_module, module_baud_rate, false);
 
 #if serialDebug
     Serial.println(diag.getPartNumber());
@@ -144,21 +138,13 @@ void launchConnections() {
 
     if (isConnectedK) {
       if (hasFIS) {
-        // display conenecting to kline
+        // display ECU details from k
         FIS.clear();
         FIS.setFont(TLBFISLib::COMPACT);
         FIS.setTextAlignment(TLBFISLib::LEFT);
         FIS.writeText(0, 30, diag.getPartNumber());
         FIS.writeText(0, 39, diag.getIdentification());
         delay(bootTime / 2);
-      }
-
-      if (hasLCD) {
-        lcd.clear();
-        lcd.setCursor(0, 0);
-        lcd.print(diag.getPartNumber());
-        lcd.setCursor(0, 1);
-        lcd.print(diag.getIdentification());
       }
     }
   }
@@ -170,16 +156,14 @@ void launchConnections() {
 #endif
     if (hasFIS) {
       // display conenecting to kline
+      FIS.clear();
+      FIS.setFont(TLBFISLib::COMPACT);
       FIS.setTextAlignment(TLBFISLib::LEFT);
       FIS.setFont(TLBFISLib::COMPACT);
-      FIS.writeText(0, 0, "CONNECTING...");
+      FIS.writeText(0, 1, "CONNECTING TO");
+      FIS.writeText(0, 9, "CAN!");
     }
 
-    if (hasLCD) {
-      lcd.clear();
-      lcd.setCursor(0, 0);
-      lcd.print(connectingToCAN);
-    }
     canInit();
 
 #if serialDebug
@@ -190,13 +174,27 @@ void launchConnections() {
         FIS.clear();
         FIS.setFont(TLBFISLib::COMPACT);
         FIS.setTextAlignment(TLBFISLib::LEFT);
-        FIS.writeText(0, 1, "CONNECTED!");
-      }
-      if (hasLCD) {
-        lcd.clear();
-        lcd.setCursor(0, 0);
-        lcd.print(connectedToCAN);
+        FIS.writeText(0, 1, "CONNECTED TO");
+        FIS.writeText(0, 9, "CAN!");
       }
     }
+  }
+}
+
+void fisDisablePrep() {
+  if (fisDisable) {
+    FIS.turnOff();
+    //diag.disconnect(false);
+  }
+  if (!fisDisable) {
+    ignitionStateRunOnce = false;
+    FIS.begin();
+    FIS.initScreen(screenSize);  // defined in config
+    for (int i = 0; i < 8; i++) {
+      fisLine[i] = "";
+    }
+  }
+  if (mimickSet) {
+    mimickSet = false;
   }
 }

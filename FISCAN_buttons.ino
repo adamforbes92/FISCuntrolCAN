@@ -13,9 +13,9 @@ void setupButtons() {
 }
 
 void mimickStalkButtons() {
-  digitalWrite(stalkPushUpReturn, !digitalRead(stalkPushUp));
-  digitalWrite(stalkPushDownReturn, !digitalRead(stalkPushDown));
-  digitalWrite(stalkPushResetReturn, !digitalRead(stalkPushReset));
+  digitalWrite(stalkPushUpReturn, digitalRead(stalkPushUp));
+  digitalWrite(stalkPushDownReturn, digitalRead(stalkPushDown));
+  digitalWrite(stalkPushResetReturn, digitalRead(stalkPushReset));
 }
 
 // this function will be called when the button was pressed 1 time only.
@@ -71,15 +71,11 @@ void singleClickReset() {
 
 void pressStartUp() {
   if (hasHaldex) {
+    lastHaldex = -1;
+    lastBlock = -1;
     showHaldex = !showHaldex;
     for (int i = 0; i < 8; i++) {
       fisLine[i] = "";
-    }
-    if (hasFIS) {
-      FIS.clear();
-    }
-    if (hasLCD) {
-      lcd.clear();
     }
   }
 }  // pressStart()
@@ -89,29 +85,6 @@ void pressStartDown() {
 }  // pressStart()
 
 void pressStartReset() {
-  fisDisable = !fisDisable;  //flip-flop disDisable
-  ignitionStateRunOnce = false;
-  if (fisDisable) {
-    FIS.turnOff();
-    //FIS.end();
-    diag.disconnect(false);
-  } else {
-    FIS.initScreen(screenSize);  // defined in config
-    for (int i = 0; i < 8; i++) {
-      fisLine[i] = "";
-    }
-  }
+  fisDisable = !fisDisable;  //flip-flop fisDisable
+  mimickSet = true;
 }  // pressStart()
-
-// this function will be called when the button was pressed 2 times in a short timeframe.
-void doubleClick() {
-}  // doubleClick
-
-
-// this function will be called when the button was pressed multiple times in a short timeframe.
-void multiClick() {
-#if serialDebug
-  Serial.print("multiClick(");
-  Serial.println(") detected.");
-#endif
-}  // multiClick
