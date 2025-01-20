@@ -14,13 +14,20 @@ void displayFIS() {
   FIS.setTextAlignment(TLBFISLib::CENTER);
   FIS.setFont(TLBFISLib::COMPACT);
 
-  if (!showHaldex && isConnectedK) {
+  if (isConnectedK) {
     char buf[16];
     sprintf(buf, "BLOCK %d", readBlock);
     FIS.writeText(0, 1, buf);
     FIS.drawLine(0, 9, 64);
-  } else {
+  }
+
+  if (showHaldex) {
     FIS.writeText(0, 1, "OPENHALDEX");
+    FIS.drawLine(0, 9, 64);
+  }
+
+  if (isConnectedCAN && !showHaldex) {
+    FIS.writeText(0, 1, "CAN DATA");
     FIS.drawLine(0, 9, 64);
   }
 

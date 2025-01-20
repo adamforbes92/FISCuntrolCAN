@@ -72,6 +72,12 @@ void loop() {
     fisDisable = false;
   }  // if ignition signal is 'low', reset the state
 
+#if serialDebug
+  if (ignitionState) {
+    Serial.println(F("Detected ignition, wake up..."));
+  }
+#endif
+
   // tick over the buttons
   stalkUpButton.tick();
   stalkDownButton.tick();
