@@ -152,7 +152,7 @@ void broadcastOpenHaldex() {
   broadcastCAN.buf[6] = 0x00;      //
   broadcastCAN.buf[7] = 0x00;      //
 
-  if (!chassisCAN.write(broadcastCAN)) {              // write CAN frame from the body to the Haldex
+  if (!chassisCAN.write(broadcastCAN) && ignitionState) {              // write CAN frame from the body to the Haldex
     Serial.println(F("Chassis CAN Write TX Fail!"));  // if writing is unsuccessful, there is something wrong with the Haldex(!) Possibly flash red LED?
   }
 }

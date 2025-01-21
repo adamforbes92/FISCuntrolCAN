@@ -17,7 +17,9 @@
 
 #define hasFIS 1                                                 // toggle for FIS display
 #define showBootScreen 2                                         // 0 = off, 1 = Welcome message, 2 = Custom Logo
-#define bootTime 4000                                            // boot logo duration
+#define bootScreenDuration 4000                                  // boot logo duration
+#define connectionDelayDuration 0                                // 'connecting...' information duration
+#define displayECUonBoot 0                                       // display ECU Part Number etc when connected
 
 #define hasK 1                                                   // use K-line for diag
 #define hasCAN 0                                                 // use CAN for diag - needs a lot of work!  What variables do we want to see?

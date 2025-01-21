@@ -13,7 +13,6 @@ FISCuntrol V3.0 - a MK4 based FIS controller based on an ESP32.
 #include "FISCAN_config.h"
 
 extern uint8_t readBlock = 1;
-uint8_t measurements[29];
 
 void sendFunctionFIS(uint8_t data) {
   SPI_INSTANCE.beginTransaction(SPISettings(125000, MSBFIRST, SPI_MODE3));
@@ -68,6 +67,7 @@ void loop() {
 
   ignitionState = digitalRead(ignitionMonitorPin);  // check to see if the ignition has been turned on...
   if (!ignitionState) {
+    FIS.turnOff();
     ignitionStateRunOnce = false;
     fisDisable = false;
   }  // if ignition signal is 'low', reset the state
@@ -75,6 +75,8 @@ void loop() {
 #if serialDebug
   if (ignitionState) {
     Serial.println(F("Detected ignition, wake up..."));
+  } else {
+    Serial.println(F("Waiting for ignition..."));
   }
 #endif
 
@@ -84,7 +86,7 @@ void loop() {
   stalkResetButton.tick();
 
   if (mimickSet || !ignitionState) {
-    fisDisablePrep();
+    fisDisablePrep();  // in '_onboot.ino'
   }
 
   if (fisDisable) {
