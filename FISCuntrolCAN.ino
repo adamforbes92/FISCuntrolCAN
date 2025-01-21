@@ -67,7 +67,7 @@ void loop() {
 
   ignitionState = digitalRead(ignitionMonitorPin);  // check to see if the ignition has been turned on...
   if (!ignitionState) {
-    FIS.turnOff();
+    //FIS.turnOff();
     ignitionStateRunOnce = false;
     fisDisable = false;
   }  // if ignition signal is 'low', reset the state
@@ -85,7 +85,7 @@ void loop() {
   stalkDownButton.tick();
   stalkResetButton.tick();
 
-  if (mimickSet || !ignitionState) {
+  if (mimickSet) {
     fisDisablePrep();  // in '_onboot.ino'
   }
 
@@ -93,7 +93,7 @@ void loop() {
     mimickStalkButtons();
   }
 
-  if (ignitionState && !ignitionStateRunOnce && !fisDisable) {  //&& !fisBeenToggled)
+  if (ignitionState && !ignitionStateRunOnce && !fisDisable) { 
 #if serialDebug
     Serial.println(F("Ignition active, begin boot..."));
 #endif

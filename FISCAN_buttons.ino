@@ -1,9 +1,11 @@
 void setupButtons() {
   stalkUpButton.attachClick(singleClickUp);
+  stalkUpButton.attachMultiClick(doubleClickUp);
   stalkUpButton.setPressMs(1000);  // that is the time when LongPressStart is called
   stalkUpButton.attachLongPressStart(pressStartUp);
 
   stalkDownButton.attachClick(singleClickDown);
+  stalkUpButton.attachMultiClick(doubleClickDown);
   stalkDownButton.setPressMs(1000);  // that is the time when LongPressStart is called
   stalkDownButton.attachLongPressStart(pressStartDown);
 
@@ -66,6 +68,25 @@ void singleClickDown() {
     }
   }
 }  // singleClick
+
+void doubleClickUp() {
+  if (!fisDisable) {
+    readBlock = readBlock + 5;
+  }
+  if (readBlock > 255) {
+    readBlock = 0;
+  }
+}  // singleClick
+
+void doubleClickDown() {
+  if (!fisDisable) {
+    readBlock = readBlock - 5;
+  }
+  if (readBlock < 0) {
+    readBlock = 0;
+  }
+}  // singleClick
+
 void singleClickReset() {
 }  // singleClick
 

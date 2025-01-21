@@ -16,6 +16,8 @@
 #define checkLED 0                                               // 0 = off, 1 = do LED check (for debug ONLY, disable on release)
 
 #define hasFIS 1                                                 // toggle for FIS display
+#define fisWakeDelay 50                                          // delay to let FIS cluster boot, if data sent immediately it doesn't boot(!)
+#define globalTextAlignment TLBFISLib::CENTER                    // TLBFISLib::LEFT / CENTER / RIGHT - note spelling(!)
 #define showBootScreen 2                                         // 0 = off, 1 = Welcome message, 2 = Custom Logo
 #define bootScreenDuration 4000                                  // boot logo duration
 #define connectionDelayDuration 0                                // 'connecting...' information duration

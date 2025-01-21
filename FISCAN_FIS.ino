@@ -2,6 +2,7 @@ void bootFIS() {
 #if serialDebug
   Serial.println(F("Booting FIS..."));
 #endif
+  delay(fisWakeDelay);
   FIS.begin();
   FIS.initScreen(screenSize);  // defined in config
 #if serialDebug
@@ -11,10 +12,10 @@ void bootFIS() {
 
 void displayFIS() {
   FIS.update();
-  FIS.setTextAlignment(TLBFISLib::CENTER);
+  FIS.setTextAlignment(globalTextAlignment);
   FIS.setFont(TLBFISLib::COMPACT);
 
-  if (isConnectedK) {
+  if (isConnectedK && !showHaldex) {
     char buf[16];
     sprintf(buf, "BLOCK %d", readBlock);
     FIS.writeText(0, 1, buf);
@@ -31,7 +32,7 @@ void displayFIS() {
     FIS.drawLine(0, 9, 64);
   }
 
-  FIS.setTextAlignment(TLBFISLib::LEFT);
+  FIS.setTextAlignment(globalTextAlignment);
   FIS.setFont(TLBFISLib::COMPACT);
   char combinedArray[500];
 

@@ -107,7 +107,7 @@ void launchConnections() {
       // display conenecting to kline
       FIS.clear();
       FIS.setFont(TLBFISLib::COMPACT);
-      FIS.setTextAlignment(TLBFISLib::LEFT);
+      FIS.setTextAlignment(globalTextAlignment);
       FIS.writeText(0, 1, "CONNECTING TO");
       FIS.writeText(0, 9, "K-LINE!");
     }
@@ -117,7 +117,7 @@ void launchConnections() {
       if (connectionDelayDuration > 0) {
         FIS.clear();
         FIS.setFont(TLBFISLib::COMPACT);
-        FIS.setTextAlignment(TLBFISLib::LEFT);
+        FIS.setTextAlignment(globalTextAlignment);
         FIS.writeText(0, 1, "CONNECTED");
         FIS.writeText(0, 9, "K-LINE!");
         delay(connectionDelayDuration);
@@ -127,7 +127,7 @@ void launchConnections() {
       if (connectionDelayDuration > 0) {
         FIS.clear();
         FIS.setFont(TLBFISLib::COMPACT);
-        FIS.setTextAlignment(TLBFISLib::LEFT);
+        FIS.setTextAlignment(globalTextAlignment);
         FIS.writeText(0, 1, "FAILED");
         FIS.writeText(0, 9, "K-LINE!");
         delay(connectionDelayDuration);
@@ -145,7 +145,7 @@ void launchConnections() {
         // display ECU details from k
         FIS.clear();
         FIS.setFont(TLBFISLib::COMPACT);
-        FIS.setTextAlignment(TLBFISLib::LEFT);
+        FIS.setTextAlignment(globalTextAlignment);
         FIS.writeText(0, 30, diag.getPartNumber());
         FIS.writeText(0, 39, diag.getIdentification());
         delay(bootScreenDuration / 2);
