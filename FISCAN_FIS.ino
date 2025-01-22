@@ -3,6 +3,7 @@ void bootFIS() {
   Serial.println(F("Booting FIS..."));
 #endif
   delay(fisWakeDelay);
+  FIS.errorFunction(custom_error_function);
   FIS.begin();
   FIS.initScreen(screenSize);  // defined in config
 #if serialDebug
@@ -66,3 +67,16 @@ void drawScreen() {
 
   //It is not necessary to reset the workspace, because an "error" event will automatically clear all custom workspaces.
 }
+
+void custom_error_function(unsigned long duration) {
+  //Errors are measured in milliseconds, to offer the possibility of differentiating between events.
+  //Here, this value won't be used, so cast it to void to avoid a compiler warning.
+  (void) duration;
+  
+  //Initialize the screen.
+  FIS.initScreen(); //calling without a parameter will default to the halfscreen size
+
+  //Write a message.
+  FIS.writeMultiLineText(0, 16, "Error" "\n" "event"); //adjacent strings are concatenated by the compiler
+}
+

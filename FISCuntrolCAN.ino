@@ -28,7 +28,11 @@ TLBFISLib FIS(fisENA, sendFunctionFIS, beginFunctionFIS);
 
 // communication - k-line & CAN
 ESP32_CAN<RX_SIZE_256, TX_SIZE_16> chassisCAN;
+#if serialDebug
+KLineKWP1281Lib diag(beginFunction, endFunction, sendFunction, receiveFunction, K_TX, is_full_duplex, &Serial);
+#else
 KLineKWP1281Lib diag(beginFunction, endFunction, sendFunction, receiveFunction, K_TX, is_full_duplex);
+#endif
 
 openhaldexState state;
 
@@ -64,13 +68,16 @@ void loop() {
 #if hasHaldex
   tickSendOpenHaldex.update();  // refresh the BT Status ticker
 #endif
+  if (digitalRead(ignitionMonitorPin)) {
+    ignitionState = true;
+    triggerShutdown = true;
+  } else {
+    ignitionState = false;
+  }
 
-  ignitionState = digitalRead(ignitionMonitorPin);  // check to see if the ignition has been turned on...
-  if (!ignitionState) {
-    //FIS.turnOff();
-    ignitionStateRunOnce = false;
-    fisDisable = false;
-  }  // if ignition signal is 'low', reset the state
+  if (!ignitionState && triggerShutdown) {
+    beginShutdown(); // in '_onboot.ino'
+  }
 
 #if serialDebug
   if (ignitionState) {
@@ -93,10 +100,7 @@ void loop() {
     mimickStalkButtons();
   }
 
-  if (ignitionState && !ignitionStateRunOnce && !fisDisable) { 
-#if serialDebug
-    Serial.println(F("Ignition active, begin boot..."));
-#endif
+  if (ignitionState && !ignitionStateRunOnce && !fisDisable) {
     ignitionStateRunOnce = true;  // set ignStateRunOnce to stop redisplay of welcome message until ign. off.
 
     launchBoot();
@@ -122,12 +126,13 @@ void loop() {
     // Get data from ECU, either via. K-line or CAN //
 
     // Display data from above capture
+    //noInterrupts();
     if (hasFIS) {
       if (hasK) {
         if (lastBlock != readBlock) {
           lastBlock = readBlock;
           FIS.clear();
-          delay(100);
+          delay(fisWakeDelay);
         } else {
           displayFIS();
         }
@@ -137,7 +142,7 @@ void loop() {
         if (lastBlock != readBlock) {
           lastBlock = readBlock;
           FIS.clear();
-          delay(100);
+          delay(fisWakeDelay);
         } else {
           displayFIS();
         }
@@ -147,7 +152,7 @@ void loop() {
         if (lastHaldex != lastMode) {
           lastHaldex = lastMode;
           FIS.clear();
-          delay(100);
+          delay(fisWakeDelay);
         } else {
           displayFIS();
         }

@@ -22,6 +22,7 @@ void setupPins() {
   attachInterrupt(digitalPinToInterrupt(stalkPushUp), checkTicks, FALLING);
   attachInterrupt(digitalPinToInterrupt(stalkPushDown), checkTicks, FALLING);
   attachInterrupt(digitalPinToInterrupt(stalkPushReset), checkTicks, FALLING);
+  //attachInterrupt(digitalPinToInterrupt(ignitionMonitorPin), ignitionStateISR, CHANGE);
 
 #if serialDebug
   Serial.println(F("Completed defining Pin Inputs/Outputs!"));
@@ -169,7 +170,7 @@ void launchConnections() {
 void fisDisablePrep() {
   if (fisDisable) {
     FIS.turnOff();
-    //diag.disconnect(false);
+    diag.disconnect(false);
   }
   if (!fisDisable) {
     ignitionStateRunOnce = false;
@@ -187,4 +188,18 @@ void fisDisablePrep() {
     digitalWrite(stalkPushDownReturn, HIGH);
     digitalWrite(stalkPushResetReturn, HIGH);
   }
+}
+
+void beginShutdown() {
+  if (hasFIS) {
+    FIS.end();
+  }
+  if (hasK) {
+    diag.disconnect(false);
+  }
+  ignitionStateRunOnce = false;
+  fisDisable = false;
+  lastBlock = -1;
+  lastHaldex = -1;
+  triggerShutdown = false;
 }

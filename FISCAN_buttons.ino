@@ -74,7 +74,7 @@ void doubleClickUp() {
     readBlock = readBlock + 5;
   }
   if (readBlock > 255) {
-    readBlock = 0;
+    readBlock = 1;
   }
 }  // singleClick
 
@@ -82,8 +82,8 @@ void doubleClickDown() {
   if (!fisDisable) {
     readBlock = readBlock - 5;
   }
-  if (readBlock < 0) {
-    readBlock = 0;
+  if (readBlock < 1) {
+    readBlock = 255;
   }
 }  // singleClick
 

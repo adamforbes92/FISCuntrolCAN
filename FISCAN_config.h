@@ -16,7 +16,7 @@
 #define checkLED 0                                               // 0 = off, 1 = do LED check (for debug ONLY, disable on release)
 
 #define hasFIS 1                                                 // toggle for FIS display
-#define fisWakeDelay 50                                          // delay to let FIS cluster boot, if data sent immediately it doesn't boot(!)
+#define fisWakeDelay 350                                         // delay to let FIS cluster boot, if data sent immediately it doesn't boot(!)
 #define globalTextAlignment TLBFISLib::CENTER                    // TLBFISLib::LEFT / CENTER / RIGHT - note spelling(!)
 #define showBootScreen 2                                         // 0 = off, 1 = Welcome message, 2 = Custom Logo
 #define bootScreenDuration 4000                                  // boot logo duration
@@ -28,7 +28,7 @@
 #define hasHaldex 1                                              // has OpenHaldex
 #define hasRTC 0                                                 // has RTC for time control.  Removed to save space - incorporate ESP RTC / WiFi get time lastminuteengineers.com/esp32-ntp-server-date-time-tutorial/
 
-#define logFrequency 250                                         // logs Per Second
+#define logFrequency 100                                         // logs Per Second
 
 #define ignitionMonitorPin 35                                    // for monitoring ignition signal via. optocoupler
 #define K_TX 17                                                  // TX pin for K-line (MC33290)
@@ -112,6 +112,7 @@ extern bool isConnectedK = false;          // for monitoring k-line connection
 extern bool isConnectedCAN = false;        // for monitoring CAN connection
 extern bool hasOpenHaldex = false;         // visbility of OpenHaldex via. CAN
 extern bool mimickSet = false;             // can't change FIS screen etc in interrupts, so set a flag to catch in the next loop
+extern bool triggerShutdown = true;
 
 extern byte vehicleSpeed = 0;
 extern byte haldexEngagement = 0;

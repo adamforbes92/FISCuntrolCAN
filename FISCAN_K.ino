@@ -18,7 +18,7 @@ void showMeasurements(uint8_t group) {
 
   // The requested group will be read 5 times, if it exists and no error occurs.
   // If a "header+body" group is encountered, we will do one more step, so that the actual data requests are 5.
-  for (uint8_t attempt = 1; attempt <= 5; attempt++) {
+  for (uint8_t attempt = 1; attempt <= 1; attempt++) {
     /*
       The readGroup() function can return:
         KLineKWP1281Lib::FAIL                - the requested group does not exist
