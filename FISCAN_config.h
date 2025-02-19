@@ -25,7 +25,7 @@
 
 #define hasK 1                                                   // use K-line for diag
 #define hasCAN 0                                                 // use CAN for diag - needs a lot of work!  What variables do we want to see?
-#define hasHaldex 1                                              // has OpenHaldex
+#define hasHaldex 0                                              // has OpenHaldex
 #define hasRTC 0                                                 // has RTC for time control.  Removed to save space - incorporate ESP RTC / WiFi get time lastminuteengineers.com/esp32-ntp-server-date-time-tutorial/
 
 #define logFrequency 100                                         // logs Per Second
