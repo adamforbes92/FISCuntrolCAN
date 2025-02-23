@@ -15,7 +15,7 @@
 #define ChassisCANDebug 0                                        // if 1, will print CAN 1 (Chassis) messages
 #define checkLED 0                                               // 0 = off, 1 = do LED check (for debug ONLY, disable on release)
 
-#define hasFIS 1                                                 // toggle for FIS display
+#define hasFIS 0                                                 // toggle for FIS display
 #define fisWakeDelay 350                                         // delay to let FIS cluster boot, if data sent immediately it doesn't boot(!)
 #define globalTextAlignment TLBFISLib::CENTER                    // TLBFISLib::LEFT / CENTER / RIGHT - note spelling(!)
 #define showBootScreen 2                                         // 0 = off, 1 = Welcome message, 2 = Custom Logo
@@ -23,7 +23,7 @@
 #define connectionDelayDuration 0                                // 'connecting...' information duration
 #define displayECUonBoot 0                                       // display ECU Part Number etc when connected
 
-#define hasK 1                                                   // use K-line for diag
+#define hasK 0                                                   // use K-line for diag
 #define hasCAN 0                                                 // use CAN for diag - needs a lot of work!  What variables do we want to see?
 #define hasHaldex 0                                              // has OpenHaldex
 #define hasRTC 0                                                 // has RTC for time control.  Removed to save space - incorporate ESP RTC / WiFi get time lastminuteengineers.com/esp32-ntp-server-date-time-tutorial/

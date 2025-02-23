@@ -54,45 +54,45 @@ void launchBoot() {
 #endif
   if (hasFIS) {
     bootFIS();
-  }
 
-  if (showBootScreen == 1) {
-    returnBootMessage();
-    if (hasFIS) {
-      FIS.clear();
-      FIS.setTextAlignment(TLBFISLib::CENTER);
-      FIS.setFont(TLBFISLib::COMPACT);
-      char combinedArray[500];
+    if (showBootScreen == 1) {
+      returnBootMessage();
+      if (hasFIS) {
+        FIS.clear();
+        FIS.setTextAlignment(TLBFISLib::CENTER);
+        FIS.setFont(TLBFISLib::COMPACT);
+        char combinedArray[500];
 
-      for (uint8_t i = 0; i < 8; i++) {
-        char buf1[fisLine[i].length() + 1];
-        fisLine[i].toUpperCase();
-        fisLine[i].toCharArray(buf1, fisLine[i].length() + 1);
-        if (i == 0) {
-          sprintf(combinedArray, "%s", buf1);  // with word space
-        } else {
-          sprintf(combinedArray, "%s\n%s", combinedArray, buf1);  // with word space
+        for (uint8_t i = 0; i < 8; i++) {
+          char buf1[fisLine[i].length() + 1];
+          fisLine[i].toUpperCase();
+          fisLine[i].toCharArray(buf1, fisLine[i].length() + 1);
+          if (i == 0) {
+            sprintf(combinedArray, "%s", buf1);  // with word space
+          } else {
+            sprintf(combinedArray, "%s\n%s", combinedArray, buf1);  // with word space
+          }
         }
-      }
 
 #if serialDebug
-      Serial.println(combinedArray);
+        Serial.println(combinedArray);
 #endif
-      FIS.writeMultiLineText(0, 15, combinedArray, false);
-      delay(bootScreenDuration);
+        FIS.writeMultiLineText(0, 15, combinedArray, false);
+        delay(bootScreenDuration);
+      }
     }
-  }
 
-  if (showBootScreen == 2) {
-    if (hasFIS) {
-      FIS.clear();
-      FIS.drawBitmap(0, 0, 64, 88, MK4Golf, true);  // draw MK4 Golf FROM PROGMEM (true)!
-      delay(bootScreenDuration);
+    if (showBootScreen == 2) {
+      if (hasFIS) {
+        FIS.clear();
+        FIS.drawBitmap(0, 0, 64, 88, MK4Golf, true);  // draw MK4 Golf FROM PROGMEM (true)!
+        delay(bootScreenDuration);
+      }
     }
-  }
 
-  for (int i = 0; i < 8; i++) {
-    fisLine[i] = "";
+    for (int i = 0; i < 8; i++) {
+      fisLine[i] = "";
+    }
   }
 #if serialDebug
   Serial.println(F("Boot Sequence Complete!"));
