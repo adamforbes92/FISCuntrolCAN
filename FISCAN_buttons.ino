@@ -71,7 +71,7 @@ void singleClickDown() {
 
 void doubleClickUp() {
   if (!fisDisable) {
-    readBlock = readBlock + 5;
+    readBlock = readBlock + 10;
   }
   if (readBlock > 255) {
     readBlock = 1;
@@ -80,7 +80,7 @@ void doubleClickUp() {
 
 void doubleClickDown() {
   if (!fisDisable) {
-    readBlock = readBlock - 5;
+    readBlock = readBlock - 10;
   }
   if (readBlock < 1) {
     readBlock = 255;

@@ -68,16 +68,16 @@ void parseCAN() {
 #if 0  //serialDebug
   Serial.println();
   Serial.print("vehicleRPM: ");
-  Serial.println(vehicleRPM);
+  DEBUG_PRINTLN(vehicleRPM);
 
   Serial.print("vehicleSpeed: ");
-  Serial.println(vehicleSpeed);
+  DEBUG_PRINTLN(vehicleSpeed);
 
   Serial.print("vehicleEML: ");
-  Serial.println(vehicleEML);
+  DEBUG_PRINTLN(vehicleEML);
 
   Serial.print("vehicleEPC: ");
-  Serial.print(vehicleEPC);
+  DEBUG_PRINTLN(vehicleEPC);
 #endif
 
   if (showHaldex) {

@@ -31,17 +31,13 @@ void returnBootMessage() {
 
   // launch the RTC
   if (!rtc_time.begin()) {
-#if serialDebug
-    Serial.println(F("Couldn't find RTC..."));
-#endif
+    DEBUG_PRINTLN("Couldn't find RTC...");
     fisLine[3] = "WELCOME";
     fisLine[4] = "ADAM!";
     fisLine[6] = strSmile;
   }
   if (!rtc_time.isrunning()) {
-#if serialDebug
-    Serial.println(F("RTC is NOT running, let's set the time!"));
-#endif
+    DEBUG_PRINTLN("RTC is NOT running, let's set the time!");
     rtc_time.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
 

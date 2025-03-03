@@ -1,7 +1,5 @@
 void setupPins() {
-#if serialDebug
-  Serial.println(F("Defining Pin Inputs/Outputs..."));
-#endif
+  DEBUG_PRINTLN("Defining Pin Inputs/Outputs...");
 
   // setup output pins for stalk buttons
   pinMode(stalkPushUpReturn, OUTPUT);
@@ -24,9 +22,7 @@ void setupPins() {
   attachInterrupt(digitalPinToInterrupt(stalkPushReset), checkTicks, FALLING);
   //attachInterrupt(digitalPinToInterrupt(ignitionMonitorPin), ignitionStateISR, CHANGE);
 
-#if serialDebug
-  Serial.println(F("Completed defining Pin Inputs/Outputs!"));
-#endif
+  DEBUG_PRINTLN("Completed defining Pin Inputs/Outputs!");
 }
 
 void blinkLED(int duration, int pinRef) {
@@ -37,21 +33,18 @@ void blinkLED(int duration, int pinRef) {
 }
 
 void simulateOutputTest() {
-#if serialDebug
-  Serial.println(F("Simulate Outputs / check LEDs..."));
-#endif
+  DEBUG_PRINTLN("Simulate Outputs / check LEDs...");
+
   blinkLED(150, stalkPushUpReturn);
   blinkLED(150, stalkPushDownReturn);
   blinkLED(150, stalkPushResetReturn);
-#if serialDebug
-  Serial.println(F("Simulate Outputs / check LEDs complete!"));
-#endif
+
+  DEBUG_PRINTLN("Simulate Outputs / check LEDs complete!");
 }
 
 void launchBoot() {
-#if serialDebug
-  Serial.println(F("Beginning Boot Sequence..."));
-#endif
+  DEBUG_PRINTLN("Beginning Boot Sequence...");
+
   if (hasFIS) {
     bootFIS();
 
@@ -74,9 +67,8 @@ void launchBoot() {
           }
         }
 
-#if serialDebug
-        Serial.println(combinedArray);
-#endif
+        DEBUG_PRINTLN(combinedArray);
+
         FIS.writeMultiLineText(0, 15, combinedArray, false);
         delay(bootScreenDuration);
       }
@@ -94,15 +86,14 @@ void launchBoot() {
       fisLine[i] = "";
     }
   }
-#if serialDebug
-  Serial.println(F("Boot Sequence Complete!"));
-#endif
+  DEBUG_PRINTLN("Boot Sequence Complete!");
 }
 
 void launchConnections() {
-#if serialDebug
-  Serial.println(F("Beginning connection launch..."));
-#endif
+  if (hasK || hasCAN || hasHaldex) {
+    DEBUG_PRINTLN("Beginning connection launch...");
+  }
+
   if (hasK) {
     if (hasFIS) {
       // display conenecting to kline
@@ -121,6 +112,7 @@ void launchConnections() {
         FIS.setTextAlignment(globalTextAlignment);
         FIS.writeText(0, 1, "CONNECTED");
         FIS.writeText(0, 9, "K-LINE!");
+        DEBUG_PRINTLN("Connected k-line!");
         delay(connectionDelayDuration);
       }
     } else {
@@ -131,15 +123,13 @@ void launchConnections() {
         FIS.setTextAlignment(globalTextAlignment);
         FIS.writeText(0, 1, "FAILED");
         FIS.writeText(0, 9, "K-LINE!");
+        DEBUG_PRINTLN("Failed k-line!");
         delay(connectionDelayDuration);
       }
-      pressStartReset();
     }
 
-#if serialDebug
-    Serial.println(diag.getPartNumber());
-    Serial.println(diag.getIdentification());
-#endif
+    DEBUG_PRINTLN(diag.getPartNumber());
+    DEBUG_PRINTLN(diag.getIdentification());
 
     if (isConnectedK) {
       if (hasFIS && displayECUonBoot) {
@@ -156,14 +146,13 @@ void launchConnections() {
 
   if (hasCAN || hasHaldex) {
     // setup CAN
-#if serialDebug
-    Serial.println(F("Setting up CAN..."));
-#endif
+    DEBUG_PRINTLN("Setting up CAN...");
     canInit();
-
-#if serialDebug
-    Serial.println(F("Set up CAN complete!"));
-#endif
+    DEBUG_PRINTLN("Set up CAN complete!");
+  }
+  if (!hasK && !hasCAN && !hasHaldex || !isConnectedK) {
+    DEBUG_PRINTLN("No connections available, defaulting to OEM");
+    pressStartReset();
   }
 }
 
@@ -199,6 +188,7 @@ void beginShutdown() {
   }
   ignitionStateRunOnce = false;
   fisDisable = false;
+  isConnectedK = false;
   lastBlock = -1;
   lastHaldex = -1;
   triggerShutdown = false;

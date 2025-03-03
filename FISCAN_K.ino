@@ -47,16 +47,16 @@ void showMeasurements(uint8_t group) {
     switch (readGroup_status) {
       case KLineKWP1281Lib::ERROR:
         {
-          Serial.println("Error reading group!");
+          DEBUG_PRINTLN("Error reading group!");
         }
         // There is no reason to continue, exit the function.
         return;
 
       case KLineKWP1281Lib::FAIL:
         {
-          Serial.print("Group ");
-          Serial.print(group);
-          Serial.println(" does not exist!");
+          DEBUG_PRINT("Group ");
+          DEBUG_PRINT(group);
+          DEBUG_PRINTLN(" does not exist!");
         }
         // There is no reason to continue, exit the function.
         return;
@@ -66,19 +66,19 @@ void showMeasurements(uint8_t group) {
           // If we have a [Header], it means this group sends responses of "header+body" type.
           // So, at this point, it doesn't make sense to receive something other than a [Body].
           if (received_group_header) {
-            Serial.println("Error reading body! (got basic settings)");
+            DEBUG_PRINTLN("Error reading body! (got basic settings)");
             return;
           }
 
           // We have 10 raw values in the `measurement_buffer` array.
-          Serial.print("Basic settings in group ");
-          Serial.print(group);
-          Serial.print(": ");
+          DEBUG_PRINT("Basic settings in group ");
+          DEBUG_PRINT(group);
+          DEBUG_PRINT(": ");
           for (uint8_t i = 0; i < 10; i++) {
-            Serial.print(measurement_buffer[i]);
-            Serial.print(" ");
+            DEBUG_PRINT(measurement_buffer[i]);
+            DEBUG_PRINT(" ");
           }
-          Serial.println();
+          DEBUG_PRINTLN("");
         }
         // We have nothing else to display (yet); skip this step of the loop.
         continue;
@@ -88,7 +88,7 @@ void showMeasurements(uint8_t group) {
           // If we have a [Header], it means this group sends responses of "header+body" type.
           // So, at this point, it doesn't make sense to receive something other than a [Body].
           if (received_group_header) {
-            Serial.println("Error reading body! (got header)");
+            DEBUG_PRINTLN("Error reading body! (got header)");
             return;
           }
 
@@ -108,7 +108,7 @@ void showMeasurements(uint8_t group) {
         {
           // If we don't have a [Header], it doesn't make sense to receive a [Body].
           if (!received_group_header) {
-            Serial.println("Error reading header! (got body)");
+            DEBUG_PRINTLN("Error reading header! (got body)");
             return;
           }
         }
@@ -121,14 +121,14 @@ void showMeasurements(uint8_t group) {
     }
 
     // If the group was read successfully, display its measurements.
-    Serial.print("Group ");
-    Serial.print(group);
-    Serial.println(':');
+    DEBUG_PRINT("Group ");
+    DEBUG_PRINT(group);
+    DEBUG_PRINT(':');
 
     // Display each measurement.
     for (uint8_t i = 0; i < amount_of_measurements; i++) {
       // Format the values with a leading tab.
-      Serial.print("    ");
+      DEBUG_PRINT("    ");
 
       /*
         The getMeasurementType() function can return:
@@ -185,11 +185,9 @@ void showMeasurements(uint8_t group) {
               // Get the recommended amount of decimal places; only the header is needed.
               decimals = KLineKWP1281Lib::getMeasurementDecimalsFromHeader(i, amount_of_measurements_in_header, measurement_buffer, sizeof(measurement_buffer));
             }
-#if serialDebug
-            Serial.print(value, decimals);
-            Serial.print(' ');
-            Serial.println(units_string);
-#endif
+            //DEBUG_PRINT(value, decimals);
+            DEBUG_PRINT(' ');
+            DEBUG_PRINTLN(units_string);
 
             fisLine[i] = String(value) + " " + String(units_string);
           }
@@ -211,26 +209,18 @@ void showMeasurements(uint8_t group) {
               KLineKWP1281Lib::getMeasurementTextFromHeaderBody(i, amount_of_measurements_in_header, measurement_buffer, sizeof(measurement_buffer), amount_of_measurements, measurement_body_buffer, sizeof(measurement_body_buffer), text_string, sizeof(text_string));
             }
 
-            // Display the text.
-#if serialDebug
-            Serial.println(text_string);
-#endif
+            DEBUG_PRINTLN(text_string);
             fisLine[i] = String(text_string);
           }
           break;
 
         // Invalid measurement index
         case KLineKWP1281Lib::UNKNOWN:
-#if serialDebug
-          Serial.println("N/A");
-#endif
+          DEBUG_PRINTLN("N/A");
           fisLine[i] = "N/A";
           break;
       }
     }
-
-#if serialDebug
-    Serial.println();
-#endif
+    DEBUG_PRINTLN("");
   }
 }

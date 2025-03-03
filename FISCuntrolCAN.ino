@@ -8,6 +8,8 @@ FISCuntrol V3.0 - a MK4 based FIS controller based on an ESP32.
     *Bitmaps can easily be generated with the https://javl.github.io/image2cpp/ tool.
     *For halfscreen, the max visible size is 64x48, and for fullscreen it is 64x88.
 > Revised code and PCBs for smaller footprints
+> V1.01 - Added debug statements
+> V1.02 - Edited PCB, missing pullup on K-Line (won't connect to ECU if missing!), added 1k pullDOWN on ENA ESP side, added 10k pullUP on ENA cluster side(!)
 */
 
 #include "FISCAN_config.h"
@@ -51,9 +53,9 @@ void IRAM_ATTR checkTicks() {
 }
 
 void setup() {
-#if serialDebug
+#if serialDebug || ChassisCANDebug
   Serial.begin(serialBaud);
-  Serial.println(F("ESP32 Initialisation..."));
+  DEBUG_PRINTLN("ESP32 Initialisation...");
 #endif
 
   setupPins();     // set pin inputs/outputs, do output test if req.
@@ -76,16 +78,8 @@ void loop() {
   }
 
   if (!ignitionState && triggerShutdown) {
-    beginShutdown(); // in '_onboot.ino'
+    beginShutdown();  // in '_onboot.ino'
   }
-
-#if serialDebug
-  if (ignitionState) {
-    Serial.println(F("Detected ignition, wake up..."));
-  } else {
-    Serial.println(F("Waiting for ignition..."));
-  }
-#endif
 
   // tick over the buttons
   stalkUpButton.tick();
@@ -93,6 +87,7 @@ void loop() {
   stalkResetButton.tick();
 
   if (mimickSet) {
+    DEBUG_PRINTLN("Turning off FIS...");
     fisDisablePrep();  // in '_onboot.ino'
   }
 
@@ -109,7 +104,7 @@ void loop() {
 
   if (ignitionState && !fisDisable) {
     // Get data from ECU, either via. K-line or CAN //
-    if (hasK && !showHaldex) {
+    if (hasK && !showHaldex && isConnectedK) {
       if (millis() - lastDataRetrieve >= logFrequency) {
         lastDataRetrieve = millis();
         // read K-Line
@@ -128,7 +123,7 @@ void loop() {
     // Display data from above capture
     //noInterrupts();
     if (hasFIS) {
-      if (hasK) {
+      if (hasK && isConnectedK) {
         if (lastBlock != readBlock) {
           lastBlock = readBlock;
           FIS.clear();

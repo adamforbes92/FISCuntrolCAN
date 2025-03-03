@@ -1,14 +1,12 @@
 void bootFIS() {
-#if serialDebug
-  Serial.println(F("Booting FIS..."));
-#endif
+  DEBUG_PRINTLN("Booting FIS...");
+
   delay(fisWakeDelay);
   FIS.errorFunction(custom_error_function);
   FIS.begin();
   FIS.initScreen(screenSize);  // defined in config
-#if serialDebug
-  Serial.println(F("Booting FIS Complete!"));
-#endif
+
+  DEBUG_PRINTLN("Booting FIS Complete!");
 }
 
 void displayFIS() {
@@ -47,10 +45,8 @@ void displayFIS() {
       sprintf(combinedArray, "%s\n%s", combinedArray, buf1);  // with word space
     }
   }
-//sprintf(combinedArray, "%s", combinedArray, "\n");  // with word space
-#if serialDebug
-  Serial.println(combinedArray);
-#endif
+  //sprintf(combinedArray, "%s", combinedArray, "\n");  // with word space
+  DEBUG_PRINTLN(combinedArray);
   FIS.writeMultiLineText(0, 35, combinedArray, false);
 }
 
@@ -71,12 +67,13 @@ void drawScreen() {
 void custom_error_function(unsigned long duration) {
   //Errors are measured in milliseconds, to offer the possibility of differentiating between events.
   //Here, this value won't be used, so cast it to void to avoid a compiler warning.
-  (void) duration;
-  
+  (void)duration;
+
   //Initialize the screen.
-  FIS.initScreen(); //calling without a parameter will default to the halfscreen size
+  FIS.initScreen();  //calling without a parameter will default to the halfscreen size
 
   //Write a message.
-  FIS.writeMultiLineText(0, 16, "Error" "\n" "event"); //adjacent strings are concatenated by the compiler
+  FIS.writeMultiLineText(0, 16, "Error"
+                                "\n"
+                                "event");  //adjacent strings are concatenated by the compiler
 }
-
