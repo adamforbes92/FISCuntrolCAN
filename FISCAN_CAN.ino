@@ -28,7 +28,7 @@ void onBodyRX(const CAN_message_t& frame) {
       // frame[2] (byte 3) > motor speed low byte
       // frame[3] (byte 4) > motor speed high byte
       // conversion: 0.25*HEX
-      vehicleRPM = (frame.buf[3] << 8 + frame.buf[2]) * 0.25;
+      vehicleRPM = ((frame.buf[3] << 8) | frame.buf[2]) * 0.25;
       break;
     case MOTOR2_ID:
       calcSpeed = (frame.buf[3] * 100 * 128) / 10000;
@@ -152,7 +152,7 @@ void broadcastOpenHaldex() {
   broadcastCAN.buf[6] = 0x00;      //
   broadcastCAN.buf[7] = 0x00;      //
 
-  if (!chassisCAN.write(broadcastCAN) && ignitionState) {              // write CAN frame from the body to the Haldex
-    Serial.println(F("Chassis CAN Write TX Fail!"));  // if writing is unsuccessful, there is something wrong with the Haldex(!) Possibly flash red LED?
+  if (!chassisCAN.write(broadcastCAN) && ignitionState) {  // write CAN frame from the body to the Haldex
+    Serial.println(F("Chassis CAN Write TX Fail!"));       // if writing is unsuccessful, there is something wrong with the Haldex(!) Possibly flash red LED?
   }
 }

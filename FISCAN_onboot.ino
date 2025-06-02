@@ -150,7 +150,7 @@ void launchConnections() {
     canInit();
     DEBUG_PRINTLN("Set up CAN complete!");
   }
-  if (!hasK && !hasCAN && !hasHaldex || !isConnectedK) {
+  if (!isConnectedCAN && !isConnectedK) {
     DEBUG_PRINTLN("No connections available, defaulting to OEM");
     pressStartReset();
   }
@@ -160,6 +160,7 @@ void fisDisablePrep() {
   if (fisDisable) {
     FIS.turnOff();
     diag.disconnect(false);
+    //chassisCAN.reset();
   }
   if (!fisDisable) {
     ignitionStateRunOnce = false;
@@ -185,6 +186,9 @@ void beginShutdown() {
   }
   if (hasK) {
     diag.disconnect(false);
+  }
+  if(hasCAN){
+    //chassisCAN.reset();
   }
   ignitionStateRunOnce = false;
   fisDisable = false;

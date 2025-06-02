@@ -10,6 +10,7 @@ FISCuntrol V3.0 - a MK4 based FIS controller based on an ESP32.
 > Revised code and PCBs for smaller footprints
 > V1.01 - Added debug statements
 > V1.02 - Edited PCB, missing pullup on K-Line (won't connect to ECU if missing!), added 1k pullDOWN on ENA ESP side, added 10k pullUP on ENA cluster side(!)
+> V1.03 - Added CAN details, sorted RPM.  Left shift all text.  Confirmed working.
 */
 
 #include "FISCAN_config.h"
@@ -70,6 +71,7 @@ void loop() {
 #if hasHaldex
   tickSendOpenHaldex.update();  // refresh the BT Status ticker
 #endif
+
   if (digitalRead(ignitionMonitorPin)) {
     ignitionState = true;
     triggerShutdown = true;

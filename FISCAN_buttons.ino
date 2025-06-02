@@ -22,6 +22,7 @@ void mimickStalkButtons() {
 
 // this function will be called when the button was pressed 1 time only.
 void singleClickUp() {
+  Serial.println("pressed up");
   if (!fisDisable) {
     if (showHaldex && hasHaldex) {
       lastMode++;
@@ -46,6 +47,7 @@ void singleClickUp() {
 }  // singleClick
 
 void singleClickDown() {
+  Serial.println("pressed down");
   if (!fisDisable) {
     if (showHaldex && hasHaldex) {
       lastMode--;
@@ -88,12 +90,13 @@ void doubleClickDown() {
 }  // singleClick
 
 void singleClickReset() {
+  Serial.println("pressed reset");
 }  // singleClick
 
 void pressStartUp() {
   if (hasHaldex) {
     lastHaldex = -1;
-    lastBlock = -1;
+    lastBlock = 0;
     showHaldex = !showHaldex;
     for (int i = 0; i < 8; i++) {
       fisLine[i] = "";

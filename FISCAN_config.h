@@ -27,14 +27,14 @@
 
 #define hasFIS 1                                                 // toggle for FIS display
 #define fisWakeDelay 100                                         // delay to let FIS cluster boot, if data sent immediately it doesn't boot(!)
-#define globalTextAlignment TLBFISLib::CENTER                    // TLBFISLib::LEFT / CENTER / RIGHT - note spelling(!)
+#define globalTextAlignment TLBFISLib::LEFT                    // TLBFISLib::LEFT / CENTER / RIGHT - note spelling(!)
 #define showBootScreen 2                                         // 0 = off, 1 = Welcome message, 2 = Custom Logo
 #define bootScreenDuration 4000                                  // boot logo duration
 #define connectionDelayDuration 0                                // 'connecting...' information duration
 #define displayECUonBoot 0                                       // display ECU Part Number etc when connected
 
-#define hasK 1                                                   // use K-line for diag
-#define hasCAN 0                                                 // use CAN for diag - needs a lot of work!  What variables do we want to see?
+#define hasK 0                                                   // use K-line for diag
+#define hasCAN 1                                                 // use CAN for diag - needs a lot of work!  What variables do we want to see?
 #define hasHaldex 1                                              // has OpenHaldex
 #define hasRTC 0                                                 // has RTC for time control.  Removed to save space - incorporate ESP RTC / WiFi get time lastminuteengineers.com/esp32-ntp-server-date-time-tutorial/
 
@@ -47,8 +47,8 @@
 #define K_Baud 10400                                             // define module baud rate (ME7.x = 10400)
 #define K_Module 0x01                                            // define address connection.  Could be adjusted to connect to other modules, but who cares?!
 
-#define pinCAN_RX 14                                             // RX pin for SN65HVD230 (CAN_RX)
-#define pinCAN_TX 13                                             // TX pin for SN65HVD230 (CAN_TX)
+#define pinCAN_RX 13                                             // RX pin for SN65HVD230 (CAN_RX)
+#define pinCAN_TX 14                                             // TX pin for SN65HVD230 (CAN_TX)
 
 #define fisCLK 18                                                // FIS Clock Output - these are default CLK for ESP32
 #define fisDATA 23                                               // FIS Data Output - these are default MOSI for ESP32
@@ -57,9 +57,9 @@
 //#define screenSize TLBFISLib::HALFSCREEN                         // use the half screen (bottom half) for the FIS kept for completeness
 #define SPI_INSTANCE SPI                                         // SPI interface for FIS
 
-#define stalkPushUp 36                                           // input stalk UP
+#define stalkPushUp 34                                           // input stalk UP
 #define stalkPushDown 39                                         // input stalk DOWN
-#define stalkPushReset 34                                        // input stalk RESET
+#define stalkPushReset 36                                        // input stalk RESET
 #define stalkPushUpReturn 25                                     // if FIS disable - use this to match stalk UP
 #define stalkPushDownReturn 26                                   // if FIS disable - use this to match stalk DOWN
 #define stalkPushResetReturn 27                                  // if FIS disable - use this to match stalk RESET
@@ -136,7 +136,7 @@ extern int lastBlock = -1;
 extern int lastHaldex = -1;
 extern unsigned long lastDataRetrieve = 0;  // for checking if it's time to get more data...
 
-extern int vehicleRPM = 0;       // current RPM
+extern uint16_t vehicleRPM = 0;       // current RPM
 extern bool vehicleEML = false;  // current EML light status
 extern bool vehicleEPC = false;  // current EPC light status
 extern int calcSpeed = 0;        // temp var for calculating speed
