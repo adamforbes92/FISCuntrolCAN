@@ -26,7 +26,7 @@ void singleClickUp() {
   if (!fisDisable) {
     if (showHaldex && hasHaldex) {
       lastMode++;
-      if (lastMode > 2) {
+      if (lastMode > 3) {
         lastMode = 0;
       }
       switch (lastMode) {
@@ -38,6 +38,9 @@ void singleClickUp() {
           break;
         case 2:
           state.mode = MODE_5050;
+          break;
+        case 3:
+          state.mode = MODE_7525;
           break;
       }
     } else {
@@ -52,7 +55,7 @@ void singleClickDown() {
     if (showHaldex && hasHaldex) {
       lastMode--;
       if (lastMode < 0) {
-        lastMode = 2;
+        lastMode = 3;
       }
       switch (lastMode) {
         case 0:
@@ -63,6 +66,9 @@ void singleClickDown() {
           break;
         case 2:
           state.mode = MODE_5050;
+          break;
+        case 3:
+          state.mode = MODE_7525;
           break;
       }
     } else {

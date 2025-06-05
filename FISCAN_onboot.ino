@@ -196,4 +196,5 @@ void beginShutdown() {
   lastBlock = -1;
   lastHaldex = -1;
   triggerShutdown = false;
+  hasOpenHaldex = false;
 }

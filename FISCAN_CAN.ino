@@ -45,13 +45,13 @@ void onBodyRX(const CAN_message_t& frame) {
       vehicleEML = bitRead(frame.buf[1], 5);
       vehicleEPC = bitRead(frame.buf[1], 6);
       break;
-    case fisCuntrol_ID:
+    case openHaldex_ID:
       //appMessageStatus = frame.buf[0];  //
       //frame.buf[1] = 0x00;                 //
-      haldexEngagement = frame.buf[2];     //
-      lockTarget = frame.buf[3];           //
-      vehicleSpeed = frame.buf[4];         //
-      state.mode_override = frame.buf[5];  //
+      haldexEngagement = map(frame.buf[2], 128, 198, 0, 100);  //
+      lockTarget = frame.buf[3];                               //
+      vehicleSpeed = frame.buf[4];                             //
+      state.mode_override = frame.buf[5];                      //
       if (!hasOpenHaldex) {
         lastMode = frame.buf[6];  //
       }
@@ -98,6 +98,9 @@ void parseCAN() {
       case 2:
         sprintf(buf, "Mode: 5050");
         break;
+      case 3:
+        sprintf(buf, "Mode: 7525");
+        break;
       default:
         sprintf(buf, "Error!");
         break;
@@ -122,8 +125,17 @@ void parseCAN() {
   } else {
     fisLine[0] = "RPM: " + String(vehicleRPM);
     fisLine[1] = "Speed: " + String(vehicleSpeed);
-    fisLine[2] = "EML: " + String(vehicleEML);
-    fisLine[3] = "EPC: " + String(vehicleEPC);
+
+    if (vehicleEML) {
+      fisLine[2] = "EML: On";
+    } else {
+      fisLine[2] = "EML: Off";
+    }
+    if (vehicleEPC) {
+      fisLine[3] = "EPC: On";
+    } else {
+      fisLine[3] = "EPC: Off";
+    }
   }
 }
 
@@ -138,10 +150,13 @@ void broadcastOpenHaldex() {
     case 2:
       state.mode = MODE_5050;
       break;
+    case 3:
+      state.mode = MODE_7525;
+      break;
   }
 
   CAN_message_t broadcastCAN;  //0x7C0
-  broadcastCAN.id = openHaldex_ID;
+  broadcastCAN.id = fisCuntrol_ID;
   broadcastCAN.len = 8;
   broadcastCAN.buf[0] = lastMode;  //
   broadcastCAN.buf[1] = 0x00;      //
@@ -152,7 +167,7 @@ void broadcastOpenHaldex() {
   broadcastCAN.buf[6] = 0x00;      //
   broadcastCAN.buf[7] = 0x00;      //
 
-  if (!chassisCAN.write(broadcastCAN) && ignitionState) {  // write CAN frame from the body to the Haldex
-    Serial.println(F("Chassis CAN Write TX Fail!"));       // if writing is unsuccessful, there is something wrong with the Haldex(!) Possibly flash red LED?
+  if (!chassisCAN.write(broadcastCAN)) {              // write CAN frame from the body to the Haldex
+    Serial.println(F("Chassis CAN Write TX Fail!"));  // if writing is unsuccessful, there is something wrong with the Haldex(!) Possibly flash red LED?
   }
 }

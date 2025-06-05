@@ -61,6 +61,8 @@ void setup() {
 
   setupPins();     // set pin inputs/outputs, do output test if req.
   setupButtons();  // set de-bounce times, etc
+  launchBoot();
+  launchConnections();
 
 #if hasHaldex
   tickSendOpenHaldex.start();  // begin ticker for BT Status

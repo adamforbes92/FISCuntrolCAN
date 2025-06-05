@@ -8,12 +8,12 @@
 #include <ESP32_CAN.h>  // for CAN
 
 #include "OneButton.h"  // for monitoring the stalk buttons - it's easier to use a lib. than parse each loop - and it counts hold presses
-#include <TickTwo.h>  // for repeated tasks
+#include <TickTwo.h>    // for repeated tasks
 
-#define serialDebug 1                                            // if 1, will Serial print
-#define serialBaud 115200                                        // define Serial talkback baud rate
-#define ChassisCANDebug 0                                        // if 1, will print CAN 1 (Chassis) messages
-#define checkLED 0                                               // 0 = off, 1 = do LED check (for debug ONLY, disable on release)
+#define serialDebug 1      // if 1, will Serial print
+#define serialBaud 115200  // define Serial talkback baud rate
+#define ChassisCANDebug 0  // if 1, will print CAN 1 (Chassis) messages
+#define checkLED 0         // 0 = off, 1 = do LED check (for debug ONLY, disable on release)
 
 #ifdef serialDebug
 #define DEBUG_PRINT(x) Serial.print(x)
@@ -25,50 +25,50 @@
 #define DEBUG_PRINTF(x...)
 #endif
 
-#define hasFIS 1                                                 // toggle for FIS display
-#define fisWakeDelay 100                                         // delay to let FIS cluster boot, if data sent immediately it doesn't boot(!)
-#define globalTextAlignment TLBFISLib::LEFT                    // TLBFISLib::LEFT / CENTER / RIGHT - note spelling(!)
-#define showBootScreen 2                                         // 0 = off, 1 = Welcome message, 2 = Custom Logo
-#define bootScreenDuration 4000                                  // boot logo duration
-#define connectionDelayDuration 0                                // 'connecting...' information duration
-#define displayECUonBoot 0                                       // display ECU Part Number etc when connected
+#define hasFIS 1                             // toggle for FIS display
+#define fisWakeDelay 500                     // delay to let FIS cluster boot, if data sent immediately it doesn't boot(!)
+#define globalTextAlignment TLBFISLib::LEFT  // TLBFISLib::LEFT / CENTER / RIGHT - note spelling(!)
+#define showBootScreen 2                     // 0 = off, 1 = Welcome message, 2 = Custom Logo
+#define bootScreenDuration 4000              // boot logo duration
+#define connectionDelayDuration 0            // 'connecting...' information duration
+#define displayECUonBoot 0                   // display ECU Part Number etc when connected
 
-#define hasK 0                                                   // use K-line for diag
-#define hasCAN 1                                                 // use CAN for diag - needs a lot of work!  What variables do we want to see?
-#define hasHaldex 1                                              // has OpenHaldex
-#define hasRTC 0                                                 // has RTC for time control.  Removed to save space - incorporate ESP RTC / WiFi get time lastminuteengineers.com/esp32-ntp-server-date-time-tutorial/
+#define hasK 0       // use K-line for diag
+#define hasCAN 1     // use CAN for diag - needs a lot of work!  What variables do we want to see?
+#define hasHaldex 1  // has OpenHaldex
+#define hasRTC 0     // has RTC for time control.  Removed to save space - incorporate ESP RTC / WiFi get time lastminuteengineers.com/esp32-ntp-server-date-time-tutorial/
 
-#define logFrequency 100                                         // logs Per Second
+#define logFrequency 100  // logs Per Second
 
-#define ignitionMonitorPin 35                                    // for monitoring ignition signal via. optocoupler
-#define K_TX 17                                                  // TX pin for K-line (MC33290)
-#define K_RX 16                                                  // RX pin for K-line (MC33290)
-#define K_line Serial2                                           // use Serial2 as the K-line port
-#define K_Baud 10400                                             // define module baud rate (ME7.x = 10400)
-#define K_Module 0x01                                            // define address connection.  Could be adjusted to connect to other modules, but who cares?!
+#define ignitionMonitorPin 35  // for monitoring ignition signal via. optocoupler
+#define K_TX 17                // TX pin for K-line (MC33290)
+#define K_RX 16                // RX pin for K-line (MC33290)
+#define K_line Serial2         // use Serial2 as the K-line port
+#define K_Baud 10400           // define module baud rate (ME7.x = 10400)
+#define K_Module 0x01          // define address connection.  Could be adjusted to connect to other modules, but who cares?!
 
-#define pinCAN_RX 13                                             // RX pin for SN65HVD230 (CAN_RX)
-#define pinCAN_TX 14                                             // TX pin for SN65HVD230 (CAN_TX)
+#define pinCAN_RX 13  // RX pin for SN65HVD230 (CAN_RX)
+#define pinCAN_TX 14  // TX pin for SN65HVD230 (CAN_TX)
 
-#define fisCLK 18                                                // FIS Clock Output - these are default CLK for ESP32
-#define fisDATA 23                                               // FIS Data Output - these are default MOSI for ESP32
-#define fisENA 19                                                // FIS Enable Output - required, but set to 19 (chip select) for ESP32
-#define screenSize TLBFISLib::FULLSCREEN                         // use the full screen for the FIS
+#define fisCLK 18                         // FIS Clock Output - these are default CLK for ESP32
+#define fisDATA 23                        // FIS Data Output - these are default MOSI for ESP32
+#define fisENA 19                         // FIS Enable Output - required, but set to 19 (chip select) for ESP32
+#define screenSize TLBFISLib::FULLSCREEN  // use the full screen for the FIS
 //#define screenSize TLBFISLib::HALFSCREEN                         // use the half screen (bottom half) for the FIS kept for completeness
-#define SPI_INSTANCE SPI                                         // SPI interface for FIS
+#define SPI_INSTANCE SPI  // SPI interface for FIS
 
-#define stalkPushUp 34                                           // input stalk UP
-#define stalkPushDown 39                                         // input stalk DOWN
-#define stalkPushReset 36                                        // input stalk RESET
-#define stalkPushUpReturn 25                                     // if FIS disable - use this to match stalk UP
-#define stalkPushDownReturn 26                                   // if FIS disable - use this to match stalk DOWN
-#define stalkPushResetReturn 27                                  // if FIS disable - use this to match stalk RESET
+#define stalkPushUp 34           // input stalk UP
+#define stalkPushDown 39         // input stalk DOWN
+#define stalkPushReset 36        // input stalk RESET
+#define stalkPushUpReturn 25     // if FIS disable - use this to match stalk UP
+#define stalkPushDownReturn 26   // if FIS disable - use this to match stalk DOWN
+#define stalkPushResetReturn 27  // if FIS disable - use this to match stalk RESET
 
-#define deviceName "FISCuntrol"                                  // for ESP32 Bluetooth name - so that it's visible on other devices
-#define fisCuntrol_ID 0x7B0                                      // FIS CAN Address
-#define appMessageStatus 1                                       // OpenHaldex Message Status
-#define openHaldex_ID 0x7C0                                      // OpenHaldex CAN Address
-#define canRefresh 50                                            // send CAN updates every xx ms
+#define deviceName "FISCuntrol"  // for ESP32 Bluetooth name - so that it's visible on other devices
+#define fisCuntrol_ID 0x7C0      // FIS CAN Address
+#define appMessageStatus 1       // OpenHaldex Message Status
+#define openHaldex_ID 0x7C2      // OpenHaldex CAN Address
+#define canRefresh 50            // send CAN updates every xx ms
 
 #define arraySize(array) (sizeof((array)) / sizeof((array)[0]))  // generic array size calculator, handy to have
 #define serialPacketEnd 0xFF                                     // define Bluetooth Serial Packet end
@@ -92,6 +92,7 @@ typedef enum openhaldex_mode_id {
   MODE_STOCK,
   MODE_FWD,
   MODE_5050,
+  MODE_7525,
   MODE_CUSTOM
 } openhaldex_mode_id;
 
@@ -107,7 +108,7 @@ extern char* connectedToK = "Connected...";
 extern char* connectingToCAN = "Connecting...";
 extern char* connectedToCAN = "Connected...";
 
-extern char* haldexOptions[] = { "OpenHaldex", "Stock", "FWD", "5050" };
+extern char* haldexOptions[] = { "OpenHaldex", "Stock", "FWD", "5050", "7525" };
 extern char* connectingToOpenHaldex = "Connecting...";
 extern char* connectedToOpenHaldex = "Connected...";
 
@@ -127,8 +128,8 @@ extern bool triggerShutdown = true;
 extern byte vehicleSpeed = 0;
 extern byte haldexEngagement = 0;
 extern byte haldexState = 0;
-extern float lockTarget = 0;
-extern float pedValue = 0;
+extern uint8_t lockTarget = 0;
+extern uint8_t pedValue = 0;
 extern int boardSoftwareVersion = 0;
 extern uint32_t lastTransmission = 0;
 extern int lastMode = 0;
@@ -136,7 +137,7 @@ extern int lastBlock = -1;
 extern int lastHaldex = -1;
 extern unsigned long lastDataRetrieve = 0;  // for checking if it's time to get more data...
 
-extern uint16_t vehicleRPM = 0;       // current RPM
+extern uint16_t vehicleRPM = 0;  // current RPM
 extern bool vehicleEML = false;  // current EML light status
 extern bool vehicleEPC = false;  // current EPC light status
 extern int calcSpeed = 0;        // temp var for calculating speed
@@ -177,7 +178,7 @@ bool receiveFunction(uint8_t* data) {
   return false;
 }
 
-// GRAPHICS 
+// GRAPHICS
 extern const unsigned char avant[] PROGMEM = {
   0x07, 0xfe, 0x00, 0x3f, 0xff, 0xc0, 0x78, 0x01, 0xe0, 0xc8, 0x01, 0x30, 0xb4, 0x02, 0xd0, 0xc4, 0x02, 0x30, 0x84, 0x02, 0x10, 0x84, 0x02, 0x10, 0x84, 0x02, 0x10, 0x84, 0x02, 0x10, 0x84, 0x02, 0x10, 0x9f, 0xff, 0x90, 0xb0, 0x00, 0xd0, 0xe0, 0x00, 0x70, 0x80, 0x00, 0x10, 0x80, 0x00, 0x10, 0x80, 0x00, 0x10, 0xe0, 0x00, 0x70, 0xb7, 0xfe, 0xd0, 0x98, 0x01, 0x90, 0x90, 0x00, 0x90, 0x90, 0x00, 0x90, 0x90, 0x00, 0x90, 0x90, 0x00, 0x90, 0x90, 0x00, 0x90, 0xf0, 0x00, 0xf0, 0x90, 0x00, 0x90, 0x90, 0x00, 0x90, 0x90, 0x00, 0x90, 0x90, 0x00, 0x90, 0x90, 0x00, 0x90, 0x90, 0x00, 0x90, 0x90, 0x00, 0x90, 0xb0, 0x00, 0xd0, 0xd0, 0x00, 0xb0, 0x90, 0x00, 0x90, 0x90, 0x00, 0x90, 0x90, 0x00, 0x90, 0x90, 0x00, 0x90, 0x98, 0x01, 0x90, 0x97, 0xfe, 0x90, 0xa0, 0x00, 0x50, 0xe0, 0x00, 0x70, 0x90, 0x00, 0x90, 0x7f, 0xff, 0xe0, 0x1f, 0xff, 0x80
 };
