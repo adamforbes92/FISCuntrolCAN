@@ -33,11 +33,12 @@
 #define connectionDelayDuration 0            // 'connecting...' information duration
 #define displayECUonBoot 0                   // display ECU Part Number etc when connected
 
-#define hasK 0       // use K-line for diag
-#define hasCAN 1     // use CAN for diag - needs a lot of work!  What variables do we want to see?
-#define hasHaldex 1  // has OpenHaldex
-#define hasRTC 0     // has RTC for time control.  Removed to save space - incorporate ESP RTC / WiFi get time lastminuteengineers.com/esp32-ntp-server-date-time-tutorial/
-
+#define hasK 0            // use K-line for diag
+#define hasCAN 1          // use CAN for diag - needs a lot of work!  What variables do we want to see?
+#define hasHaldex 1       // has OpenHaldex
+#define hasRTC 0          // has RTC for time control.  Removed to save space - incorporate ESP RTC / WiFi get time lastminuteengineers.com/esp32-ntp-server-date-time-tutorial/
+#define isMPH 1           // convert kmh readings into mph
+#define mphFactor 0.621371 // to convert from kmh > mph
 #define logFrequency 100  // logs Per Second
 
 #define ignitionMonitorPin 35  // for monitoring ignition signal via. optocoupler

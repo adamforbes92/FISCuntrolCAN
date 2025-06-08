@@ -33,6 +33,9 @@ void onBodyRX(const CAN_message_t& frame) {
     case MOTOR2_ID:
       calcSpeed = (frame.buf[3] * 100 * 128) / 10000;
       vehicleSpeed = (byte)(calcSpeed >= 255 ? 255 : calcSpeed);
+      if (isMPH) {
+        vehicleSpeed = vehicleSpeed * mphFactor;
+      }
       break;
     case MOTOR5_ID:
       // frame[1] > free, bit 0
@@ -51,7 +54,10 @@ void onBodyRX(const CAN_message_t& frame) {
       haldexEngagement = map(frame.buf[2], 128, 198, 0, 100);  //
       lockTarget = frame.buf[3];                               //
       vehicleSpeed = frame.buf[4];                             //
-      state.mode_override = frame.buf[5];                      //
+      if (isMPH) {
+        vehicleSpeed = vehicleSpeed * mphFactor;
+      }
+      state.mode_override = frame.buf[5];  //
       if (!hasOpenHaldex) {
         lastMode = frame.buf[6];  //
       }
