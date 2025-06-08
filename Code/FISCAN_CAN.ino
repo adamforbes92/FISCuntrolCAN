@@ -122,6 +122,13 @@ void parseCAN() {
     sprintf(buf4, "Speed: %-3d%", vehicleSpeed);
     sprintf(buf5, "Pedal: %-3d%", pedValue);
 
+    FIS.fixNumberPadding(buf);
+    FIS.fixNumberPadding(buf1);
+    FIS.fixNumberPadding(buf2);
+    FIS.fixNumberPadding(buf3);
+    FIS.fixNumberPadding(buf4);
+    FIS.fixNumberPadding(buf5);
+
     fisLine[0] = String(buf1);
     fisLine[1] = String(buf);
     fisLine[2] = String(buf2);
@@ -138,6 +145,13 @@ void parseCAN() {
 
     sprintf(buf, "RPM: %-4d%", vehicleRPM);
     sprintf(buf1, "Speed: %-4d%", vehicleSpeed);
+
+    FIS.fixNumberPadding(buf);
+    FIS.fixNumberPadding(buf1);
+    FIS.fixNumberPadding(buf2);
+    FIS.fixNumberPadding(buf3);
+    FIS.fixNumberPadding(buf4);
+    FIS.fixNumberPadding(buf5);
 
     fisLine[0] = String(buf);
     fisLine[1] = String(buf1);
