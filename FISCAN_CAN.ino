@@ -111,10 +111,10 @@ void parseCAN() {
       sprintf(buf1, "Conn.: No");
     }
 
-    sprintf(buf2, "Act. Lock: %d%", haldexEngagement);
-    sprintf(buf3, "Req. Lock: %d%", lockTarget);
-    sprintf(buf4, "Speed: %d%", vehicleSpeed);
-    sprintf(buf5, "Pedal: %d%", pedValue);
+    sprintf(buf2, "Act. Lock: %-3d%", haldexEngagement);
+    sprintf(buf3, "Req. Lock: %-3d%", lockTarget);
+    sprintf(buf4, "Speed: %-3d%", vehicleSpeed);
+    sprintf(buf5, "Pedal: %-3d%", pedValue);
 
     fisLine[0] = String(buf1);
     fisLine[1] = String(buf);
@@ -123,8 +123,18 @@ void parseCAN() {
     fisLine[4] = String(buf4);
     fisLine[5] = String(buf5);
   } else {
-    fisLine[0] = "RPM: " + String(vehicleRPM);
-    fisLine[1] = "Speed: " + String(vehicleSpeed);
+    char buf[20];
+    char buf1[20];
+    char buf2[40];
+    char buf3[40];
+    char buf4[40];
+    char buf5[40];
+
+    sprintf(buf, "RPM: %-4d%", vehicleRPM);
+    sprintf(buf1, "Speed: %-4d%", vehicleSpeed);
+
+    fisLine[0] = String(buf);
+    fisLine[1] = String(buf1);
 
     if (vehicleEML) {
       fisLine[2] = "EML: On";
