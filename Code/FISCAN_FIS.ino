@@ -24,6 +24,11 @@ void displayFIS() {
   if (showHaldex) {
     FIS.writeText(0, 1, "OPENHALDEX");
     FIS.drawLine(0, 9, 64);
+
+    if (isStandalone) {
+      FIS.writeText(0, 2, "STANDALONE!");
+      FIS.drawLine(0, 17, 64);
+    }
   }
 
   if (isConnectedCAN && !showHaldex) {

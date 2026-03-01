@@ -4,13 +4,8 @@ FISCuntrol V3.0 - a MK4 based FIS controller based on an ESP32.
 > Supports CAN-BUS and K-line diagnostic protocols for gathering data
 > Supports OpenHaldex 
 > Optional RTC for special dates & custom messages
-> *** Boot logos to be added ***
-    *Bitmaps can easily be generated with the https://javl.github.io/image2cpp/ tool.
-    *For halfscreen, the max visible size is 64x48, and for fullscreen it is 64x88.
-> Revised code and PCBs for smaller footprints
-> V1.01 - Added debug statements
-> V1.02 - Edited PCB, missing pullup on K-Line (won't connect to ECU if missing!), added 1k pullDOWN on ENA ESP side, added 10k pullUP on ENA cluster side(!)
-> V1.03 - Added CAN details, sorted RPM.  Left shift all text.  Confirmed working.
+
+Version history is '_vers.h'
 */
 
 #include "FISCAN_config.h"
@@ -38,6 +33,8 @@ KLineKWP1281Lib diag(beginFunction, endFunction, sendFunction, receiveFunction, 
 #endif
 
 openhaldexState state;
+ESPAsyncHTTPUpdateServer updateServer;
+AsyncWebServer server(80);
 
 extern OneButton stalkUpButton(stalkPushUp, true);
 extern OneButton stalkDownButton(stalkPushDown, true);
@@ -63,6 +60,8 @@ void setup() {
   setupButtons();  // set de-bounce times, etc
   launchBoot();
   launchConnections();
+  setupWiFi();  // enable / start WiFi
+  setupOTA();   // setup Over-the-Air updates
 
 #if hasHaldex
   tickSendOpenHaldex.start();  // begin ticker for BT Status

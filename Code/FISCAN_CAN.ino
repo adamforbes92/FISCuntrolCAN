@@ -25,18 +25,18 @@ void onBodyRX(const CAN_message_t& frame) {
 
   switch (frame.id) {
     case MOTOR1_ID:
-      // frame[2] (byte 3) > motor speed low byte
-      // frame[3] (byte 4) > motor speed high byte
-      // conversion: 0.25*HEX
       vehicleRPM = ((frame.buf[3] << 8) | frame.buf[2]) * 0.25;
+      pedValue = frame.buf[5] * 0.4;
       break;
+
     case MOTOR2_ID:
       calcSpeed = (frame.buf[3] * 100 * 128) / 10000;
       vehicleSpeed = (byte)(calcSpeed >= 255 ? 255 : calcSpeed);
       if (isMPH) {
-        vehicleSpeed = vehicleSpeed * mphFactor;
+        vehicleSpeed = int((vehicleSpeed * mphFactor) / 1000000);  //621371
       }
       break;
+
     case MOTOR5_ID:
       // frame[1] > free, bit 0
       // frame[1] > vorgl lampeu, bit 1
@@ -51,19 +51,31 @@ void onBodyRX(const CAN_message_t& frame) {
     case openHaldex_ID:
       //appMessageStatus = frame.buf[0];  //
       //frame.buf[1] = 0x00;                 //
+      isStandalone = frame.buf[1];
       haldexEngagement = map(frame.buf[2], 128, 198, 0, 100);  //
-      lockTarget = frame.buf[3];                               //
-      vehicleSpeed = frame.buf[4];                             //
+      if (haldexEngagement > 100) {
+        haldexEngagement = 100;
+      }
+      lockTarget = frame.buf[3];          //
+      haldexVehicleSpeed = frame.buf[4];  //
       if (isMPH) {
-        vehicleSpeed = vehicleSpeed * mphFactor;
+        haldexVehicleSpeed = int((haldexVehicleSpeed * mphFactor) / 1000000);  //621371
       }
       state.mode_override = frame.buf[5];  //
       if (!hasOpenHaldex) {
         lastMode = frame.buf[6];  //
       }
-      pedValue = frame.buf[7];  //
       hasOpenHaldex = true;
       break;
+    case ignitron1_ID:
+      break;
+
+    case ignitron2_ID:
+      break;
+
+    case ignitron3_ID:
+      break;
+
     default:
       // do nothing...
       break;
@@ -108,6 +120,7 @@ void parseCAN() {
         sprintf(buf, "Mode: 7525");
         break;
       default:
+        lastMode = 0;
         sprintf(buf, "Error!");
         break;
     }
@@ -119,7 +132,7 @@ void parseCAN() {
 
     sprintf(buf2, "Act. Lock: %-3d%", haldexEngagement);
     sprintf(buf3, "Req. Lock: %-3d%", lockTarget);
-    sprintf(buf4, "Speed: %-3d%", vehicleSpeed);
+    sprintf(buf4, "Speed: %-4d%", haldexVehicleSpeed);
     sprintf(buf5, "Pedal: %-3d%", pedValue);
 
     FIS.fixNumberPadding(buf);

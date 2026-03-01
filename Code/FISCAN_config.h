@@ -10,7 +10,14 @@
 #include "OneButton.h"  // for monitoring the stalk buttons - it's easier to use a lib. than parse each loop - and it counts hold presses
 #include <TickTwo.h>    // for repeated tasks
 
-#define serialDebug 1      // if 1, will Serial print
+// for OTA
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <ESPAsyncHTTPUpdateServer.h>
+#include <WiFi.h>            // included for WiFi pages
+#include <ESPmDNS.h>         // included for WiFi pages
+
+#define serialDebug 0      // if 1, will Serial print
 #define serialBaud 115200  // define Serial talkback baud rate
 #define ChassisCANDebug 0  // if 1, will print CAN 1 (Chassis) messages
 #define checkLED 0         // 0 = off, 1 = do LED check (for debug ONLY, disable on release)
@@ -25,6 +32,8 @@
 #define DEBUG_PRINTF(x...)
 #endif
 
+#define wifiHostName "FISCuntrolCAN"  // the WiFi name
+
 #define hasFIS 1                             // toggle for FIS display
 #define fisWakeDelay 500                     // delay to let FIS cluster boot, if data sent immediately it doesn't boot(!)
 #define globalTextAlignment TLBFISLib::LEFT  // TLBFISLib::LEFT / CENTER / RIGHT - note spelling(!)
@@ -38,7 +47,7 @@
 #define hasHaldex 1       // has OpenHaldex
 #define hasRTC 0          // has RTC for time control.  Removed to save space - incorporate ESP RTC / WiFi get time lastminuteengineers.com/esp32-ntp-server-date-time-tutorial/
 #define isMPH 1           // convert kmh readings into mph
-#define mphFactor 0.621371 // to convert from kmh > mph
+#define mphFactor 621371  // to convert from kmh > mph
 #define logFrequency 100  // logs Per Second
 
 #define ignitionMonitorPin 35  // for monitoring ignition signal via. optocoupler
@@ -61,14 +70,12 @@
 #define stalkPushUp 34           // input stalk UP
 #define stalkPushDown 39         // input stalk DOWN
 #define stalkPushReset 36        // input stalk RESET
-#define stalkPushUpReturn 25     // if FIS disable - use this to match stalk UP
+#define stalkPushUpReturn 27     // if FIS disable - use this to match stalk UP
 #define stalkPushDownReturn 26   // if FIS disable - use this to match stalk DOWN
-#define stalkPushResetReturn 27  // if FIS disable - use this to match stalk RESET
+#define stalkPushResetReturn 25  // if FIS disable - use this to match stalk RESET
 
 #define deviceName "FISCuntrol"  // for ESP32 Bluetooth name - so that it's visible on other devices
-#define fisCuntrol_ID 0x7C0      // FIS CAN Address
 #define appMessageStatus 1       // OpenHaldex Message Status
-#define openHaldex_ID 0x7C2      // OpenHaldex CAN Address
 #define canRefresh 50            // send CAN updates every xx ms
 
 #define arraySize(array) (sizeof((array)) / sizeof((array)[0]))  // generic array size calculator, handy to have
@@ -87,14 +94,20 @@
 #define BRAKES3_ID 0x4A0
 #define BRAKES5_ID 0x5A0
 #define HALDEX_ID 0x2C0
+#define fisCuntrol_ID 0x6A0  // FIS CAN Address
+#define openHaldex_ID 0x6B0  // OpenHaldex CAN Address
+#define ignitron1_ID 0x7C4
+#define ignitron2_ID 0x7C6
+#define ignitron3_ID 0x7C8
 
 // Haldex mode types
 typedef enum openhaldex_mode_id {
   MODE_STOCK,
   MODE_FWD,
   MODE_5050,
+  MODE_6040,
   MODE_7525,
-  MODE_CUSTOM
+  MODE_CUSTOM,
 } openhaldex_mode_id;
 
 typedef struct openhaldexState {
@@ -125,15 +138,17 @@ extern bool isConnectedCAN = false;        // for monitoring CAN connection
 extern bool hasOpenHaldex = false;         // visbility of OpenHaldex via. CAN
 extern bool mimickSet = false;             // can't change FIS screen etc in interrupts, so set a flag to catch in the next loop
 extern bool triggerShutdown = true;
+extern bool isStandalone = false;
 
-extern byte vehicleSpeed = 0;
-extern byte haldexEngagement = 0;
-extern byte haldexState = 0;
+extern uint8_t vehicleSpeed = 0;
+extern uint8_t haldexVehicleSpeed = 0;
+extern uint8_t haldexEngagement = 0;
+extern uint8_t haldexState = 0;
 extern uint8_t lockTarget = 0;
 extern uint8_t pedValue = 0;
 extern int boardSoftwareVersion = 0;
 extern uint32_t lastTransmission = 0;
-extern int lastMode = 0;
+extern uint8_t lastMode = 0;
 extern int lastBlock = -1;
 extern int lastHaldex = -1;
 extern unsigned long lastDataRetrieve = 0;  // for checking if it's time to get more data...
@@ -143,11 +158,50 @@ extern bool vehicleEML = false;  // current EML light status
 extern bool vehicleEPC = false;  // current EPC light status
 extern int calcSpeed = 0;        // temp var for calculating speed
 
+extern void setupWiFi();
+extern void setupOTA();
+
 byte btIncoming[10];
 byte btOutgoing[4];
 int incomingLen;
 
 extern String fisLine[8] = { "" };
+
+struct card1 {
+  char variableName[0x0F];
+  int variablePos;
+  int FISline;
+};
+
+struct card2 {
+  char variableName[0x0F];
+  int variablePos;
+  int FISline;
+};
+
+struct card3 {
+  char variableName[0x0F];
+  int variablePos;
+  int FISline;
+};
+
+struct card4 {
+  char variableName[0x0F];
+  int variablePos;
+  int FISline;
+};
+
+struct card5 {
+  char variableName[0x0F];
+  int variablePos;
+  int FISline;
+};
+
+struct card1 card1[7];  // 7 entries for each FIS line
+struct card2 card2[7];  // 7 entries for each FIS line
+struct card3 card3[7];  // 7 entries for each FIS line
+struct card4 card4[7];  // 7 entries for each FIS line
+struct card5 card5[7];  // 7 entries for each FIS line
 
 // Enable/disable printing library debug information on the Serial Monitor.
 #define debug_info false  // You may change the debug level in "KLineKWP1281Lib.h".
