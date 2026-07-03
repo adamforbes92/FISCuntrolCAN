@@ -1,6 +1,6 @@
 # FISCuntrolCAN
 
-![FISCuntrolCAN web UI](images/fis_ui.png)
+![FISCuntrolCAN web UI](Images/fis_ui.png)
 
 FISCuntrolCAN turns the **FIS** — the driver-information display in the middle of a VW/Audi instrument cluster — into a live data screen for your engine and chassis. It reads the car's **chassis CAN bus** (speed, RPM, pedal, Haldex, EML/EPC) and can also talk **KWP1281 over K-line** for diagnostic measuring blocks and fault codes, then displays it all onto the cluster as scrollable "cards" you flick through with the wiper-stalk buttons. It additionally decodes a standalone **Ignitron** ECU broadcast, co-operates with an **OpenHaldex** controller, and is configured entirely from a phone over **Wi-Fi** — no laptop or serial cable needed in the car. OTA updates and live diagnostics.
 
@@ -90,7 +90,7 @@ built around an ESP32 DevKit V1 (WROOM-32) with an on-board switching
 regulator, CAN and K-line transceivers, the FIS level shifter, and a single
 18-way MX23A18NF1 connector.
 
-![FISCuntrol V3 board overview](images/PCBOverview.png)
+![FISCuntrol V3 board overview](Images/PCBOverview.png)
 
 ### Harness Connector
 
@@ -98,7 +98,7 @@ All vehicle wiring lands on one **18-way** MX23A18NF1 connector (two rows of 9).
 top-right, pin 9 top-left; pin 10 is bottom-right, pin 18 bottom-left when
 looking into the mating face.
 
-![Connector pin numbering](images/PCBPinOut.png)
+![Connector pin numbering](Images/PCBPinOut.png)
 
 | Pin | Silk name         | Function                                   | Internal net / GPIO         |
 | --- | ----------------- | ------------------------------------------ | --------------------------- |
@@ -126,7 +126,7 @@ looking into the mating face.
 
 | Pins 1–6 · 10–15 | Pins 6–9 · 15–18 |
 | --- | --- |
-| ![Lower connector pins](images/LowerPins.png) | ![Upper connector pins](images/UpperPins.png) |
+| ![Lower connector pins](Images/LowerPins.png) | ![Upper connector pins](Images/UpperPins.png) |
 
 </details>
 
@@ -134,7 +134,7 @@ looking into the mating face.
 
 The board carries seven indicator LEDs for at-a-glance stalk and ignition I/O.
 
-![Stalk and ignition status LEDs](images)
+![Stalk and ignition status LEDs](Images)
 
 | LED            | Group                    | Indicates                                          |
 | -------------- | ------------------------ | -------------------------------------------------- |
@@ -144,7 +144,7 @@ The board carries seven indicator LEDs for at-a-glance stalk and ignition I/O.
 
 ### CAN Termination &amp; RTC
 
-![CAN termination jumper, boot button and RTC connector](images/PCBTermandRTC.png)
+![CAN termination jumper, boot button and RTC connector](Images/PCBTermandRTC.png)
 
 | Feature        | Detail                                                                    |
 | -------------- | ------------------------------------------------------------------------- |
