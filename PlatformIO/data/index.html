@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>FISCuntrolCAN</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 id="uiTitle">FISCuntrolCAN</h1>
+            <div class="status-bar">
+                <span class="status-badge" id="canStatus">CAN: --</span>
+                <span class="status-badge" id="klineStatus">K-Line: --</span>
+                <span class="status-badge" id="apiCardModeStatus">API Card: --</span>
+            </div>
+        </header>
+
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-page="fis">FIS</button>
+            <button class="nav-tab" data-page="kline">K-Line</button>
+            <button class="nav-tab" data-page="can">CAN</button>
+            <button class="nav-tab" data-page="settings">Settings</button>
+            <button class="nav-tab" data-page="diagnostics">Diagnostics</button>
+        </nav>
+
+        <div class="page active" id="fis-page">
+            <section class="card">
+                <h2>Current FIS Card</h2>
+                <div class="diag-grid">
+                    <div class="diag-item">
+                        <span class="diag-label">Current Source</span>
+                        <span class="diag-value" id="fisSource">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">Selected Source</span>
+                        <span class="diag-value" id="fisSelectedSource">--</span>
+                    </div>
+                </div>
+                <div class="fis-preview">
+                    <div class="fis-preview-title" id="fisTitle">--</div>
+                    <div class="fis-preview-body" id="fisLines">
+                        <div class="fis-line">--</div>
+                        <div class="fis-line"></div>
+                        <div class="fis-line"></div>
+                        <div class="fis-line"></div>
+                        <div class="fis-line"></div>
+                        <div class="fis-line"></div>
+                        <div class="fis-line"></div>
+                        <div class="fis-line"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Simulate Buttons</h2>
+                <div class="mode-grid">
+                    <button class="mode-btn sim-btn" data-button="up">False Up</button>
+                    <button class="mode-btn sim-btn" data-button="down">False Down</button>
+                    <button class="mode-btn sim-btn" data-button="reset">False Reset</button>
+                    <button class="mode-btn" id="restartIgnition">Restart Ignition</button>
+                </div>
+            </section>
+        </div>
+
+        <div class="page" id="settings-page">
+            <section class="card">
+                <h2>On Boot Connection Source</h2>
+                <p class="hint">Choose what launches when ignition goes live. Changes are saved automatically.</p>
+                <select id="bootSource" class="input-select">
+                    <option value="can">CAN</option>
+                    <option value="kline">K-Line</option>
+                    <option value="none">None</option>
+                </select>
+            </section>
+
+            <section class="card">
+                <h2>Oil Sensor</h2>
+                <p class="hint">Enable the oil temperature/level sensor task. Saved automatically.</p>
+                <label class="input-group">
+                    <span>Oil Sensor Task</span>
+                    <select id="oilSensorEnabled" class="input-select">
+                        <option value="false">Disabled</option>
+                        <option value="true">Enabled</option>
+                    </select>
+                </label>
+            </section>
+
+            <section class="card">
+                <h2>Boot Logo</h2>
+                <p class="hint">Custom logos are stored in LittleFS. Upload only the raw 704-byte boot-logo file. Anything else is rejected.</p>
+                <select id="bootScreen" class="input-select">
+                    <option value="0">Off</option>
+                    <option value="2">MK4 Golf</option>
+                    <option value="3">Logo</option>
+                    <option value="4">Finger</option>
+                    <option value="5">Custom Raw</option>
+                </select>
+                <div class="upload-stack">
+                    <input type="file" id="bootLogoFile" class="input-select">
+                    <button class="btn-primary" id="uploadBootLogo">Upload Custom Logo</button>
+                    <p class="hint status-text" id="bootLogoStatus">No custom logo uploaded.</p>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Boot Message / Greeting</h2>
+                <p class="hint">Shown on the FIS at boot. The time-based greeting requires the device clock to be set. A matching special date overrides the boot logo for that day.</p>
+                <div class="gpio-grid">
+                    <label class="input-group">
+                        <span>Welcome Greeting</span>
+                        <select id="welcomeGreetingEnabled" class="input-select">
+                            <option value="false">Disabled</option>
+                            <option value="true">Enabled</option>
+                        </select>
+                    </label>
+                    <label class="input-group">
+                        <span>Greeting Name</span>
+                        <input type="text" id="welcomeGreetName" class="input-select" maxlength="20" placeholder="e.g. Adam">
+                    </label>
+                    <label class="input-group">
+                        <span>Special Dates</span>
+                        <select id="specialDatesEnabled" class="input-select">
+                            <option value="false">Disabled</option>
+                            <option value="true">Enabled</option>
+                        </select>
+                    </label>
+                </div>
+                <p class="hint" style="margin-top:0.75rem">Up to 5 special dates. Leave date blank to disable a slot. Use newlines to fill multiple FIS lines.</p>
+                <div class="gpio-grid" style="margin-top:0.5rem">
+                    <label class="input-group"><span>Date 1</span><input type="date" id="specialDate0Date" class="input-select"></label>
+                    <label class="input-group"><span>Message 1</span><textarea id="specialDate0Text" class="input-select" rows="3" maxlength="200" placeholder="Line1&#10;Line2&#10;Line3"></textarea></label>
+                    <label class="input-group"><span>Date 2</span><input type="date" id="specialDate1Date" class="input-select"></label>
+                    <label class="input-group"><span>Message 2</span><textarea id="specialDate1Text" class="input-select" rows="3" maxlength="200" placeholder="Line1&#10;Line2&#10;Line3"></textarea></label>
+                    <label class="input-group"><span>Date 3</span><input type="date" id="specialDate2Date" class="input-select"></label>
+                    <label class="input-group"><span>Message 3</span><textarea id="specialDate2Text" class="input-select" rows="3" maxlength="200" placeholder="Line1&#10;Line2&#10;Line3"></textarea></label>
+                    <label class="input-group"><span>Date 4</span><input type="date" id="specialDate3Date" class="input-select"></label>
+                    <label class="input-group"><span>Message 4</span><textarea id="specialDate3Text" class="input-select" rows="3" maxlength="200" placeholder="Line1&#10;Line2&#10;Line3"></textarea></label>
+                    <label class="input-group"><span>Date 5</span><input type="date" id="specialDate4Date" class="input-select"></label>
+                    <label class="input-group"><span>Message 5</span><textarea id="specialDate4Text" class="input-select" rows="3" maxlength="200" placeholder="Line1&#10;Line2&#10;Line3"></textarea></label>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>RPM Trigger Logo</h2>
+                <p class="hint">Shown when RPM is greater than the selected threshold. Pick the built-in shift-light preset or upload your own 704-byte raw image.</p>
+                <select id="rpmLogoSelection" class="input-select">
+                    <option value="1">Danger (preset)</option>
+                    <option value="2">Custom Raw</option>
+                </select>
+                <button class="btn-secondary" id="testShiftLogo">Test Shift Indicator (3s)</button>
+                <div class="upload-stack">
+                    <input type="file" id="rpmLogoFile" class="input-select">
+                    <button class="btn-primary" id="uploadRpmLogo">Upload RPM Logo</button>
+                    <p class="hint status-text" id="rpmLogoStatus">No RPM logo uploaded.</p>
+                </div>
+                <label class="input-group rpm-slider-group" for="rpmLogoThreshold">
+                    <span>RPM Trigger Threshold: <strong id="rpmLogoThresholdValue">3000</strong> RPM</span>
+                    <input type="range" id="rpmLogoThreshold" min="0" max="8000" step="5" value="3000">
+                </label>
+            </section>
+
+            <section class="card">
+                <h2>External Output</h2>
+                <p class="hint">Drives the dedicated external output pin. Choose how it is triggered. Saved automatically.</p>
+                <div class="diag-grid">
+                    <div class="diag-item">
+                        <span class="diag-label">Output Pin</span>
+                        <span class="diag-value" id="extOutputPin">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">State</span>
+                        <span class="diag-value" id="extOutputState">--</span>
+                    </div>
+                </div>
+                <label class="input-group">
+                    <span>Trigger Mode</span>
+                    <select id="extOutputMode" class="input-select">
+                        <option value="0">Manual</option>
+                        <option value="1">RPM Threshold</option>
+                        <option value="2">Speed Threshold</option>
+                    </select>
+                </label>
+                <div class="mode-grid" id="extOutputManualControls">
+                    <button class="mode-btn btn-primary" id="extOutputOnBtn">Enable</button>
+                    <button class="mode-btn btn-secondary" id="extOutputOffBtn">Disable</button>
+                </div>
+                <label class="input-group rpm-slider-group" id="extOutputRpmGroup" for="extOutputRpmThreshold">
+                    <span>RPM Trigger Threshold: <strong id="extOutputRpmThresholdValue">3000</strong> RPM</span>
+                    <input type="range" id="extOutputRpmThreshold" min="0" max="8000" step="50" value="3000">
+                </label>
+                <label class="input-group rpm-slider-group" id="extOutputSpeedGroup" for="extOutputSpeedThreshold">
+                    <span>Speed Trigger Threshold: <strong id="extOutputSpeedThresholdValue">60</strong></span>
+                    <input type="range" id="extOutputSpeedThreshold" min="0" max="255" step="1" value="60">
+                </label>
+            </section>
+
+            <p class="hint status-text" id="settingsStatus">Settings auto-save is enabled.</p>
+        </div>
+
+        <div class="page" id="kline-page">
+            <section class="card">
+                <h2>K-Line Module</h2>
+                <p class="hint">Default module to connect to when K-Line is enabled.</p>
+                <label class="input-group">
+                    <span>Default Module</span>
+                    <select id="klineDefaultModule" class="input-select">
+                        <option value="1">0x01 — Engine</option>
+                        <option value="2">0x02 — Transmission</option>
+                        <option value="3">0x03 — ABS / Brakes</option>
+                        <option value="22">0x22 — Airbag</option>
+                        <option value="23">0x23 — Instrument Cluster</option>
+                        <option value="70">0x46 — Comfort</option>
+                    </select>
+                </label>
+            </section>
+
+            <section class="card">
+                <h2>Fault Codes</h2>
+                <div class="diag-grid">
+                    <div class="diag-item">
+                        <span class="diag-label">K-Line Status</span>
+                        <span class="diag-value" id="klineFaultStatus">--</span>
+                    </div>
+                </div>
+                <div class="mode-grid">
+                    <button class="mode-btn btn-primary" id="readFaultsBtn">Read Faults</button>
+                    <button class="mode-btn btn-secondary" id="clearFaultsBtn">Clear Faults</button>
+                </div>
+                <p class="hint status-text" id="faultOpStatus"></p>
+                <div id="faultList" class="fault-list"></div>
+            </section>
+        </div>
+
+        <div class="page" id="can-page">
+            <section class="card">
+                <h2>CAN Status</h2>
+                <div class="diag-grid">
+                    <div class="diag-item">
+                        <span class="diag-label">CAN Connected</span>
+                        <span class="diag-value" id="canPageConnected">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">Current Card</span>
+                        <span class="diag-value" id="canPageCurrentCard">--</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>CAN Card Select</h2>
+                <p class="hint">Choose which CAN data card is displayed on the FIS. Same as using the stalk buttons.</p>
+                <div id="canCardList" class="fault-list"></div>
+            </section>
+        </div>
+
+        <div class="page" id="diagnostics-page">
+            <section class="card">
+                <h2>Serial / UI Logging</h2>
+                <p class="hint">Each category gates its messages to both the serial console and the on-screen log. Saved automatically.</p>
+                <div class="gpio-grid">
+                    <label class="input-group">
+                        <span>[SYS] System</span>
+                        <select id="logSys" class="input-select">
+                            <option value="true">Enabled</option>
+                            <option value="false">Disabled</option>
+                        </select>
+                    </label>
+                    <label class="input-group">
+                        <span>[CAN] CAN Bus</span>
+                        <select id="logCan" class="input-select">
+                            <option value="true">Enabled</option>
+                            <option value="false">Disabled</option>
+                        </select>
+                    </label>
+                    <label class="input-group">
+                        <span>[KLINE] K-Line</span>
+                        <select id="logKline" class="input-select">
+                            <option value="true">Enabled</option>
+                            <option value="false">Disabled</option>
+                        </select>
+                    </label>
+                    <label class="input-group">
+                        <span>[IO] Ignition / Buttons / Oil</span>
+                        <select id="logIo" class="input-select">
+                            <option value="true">Enabled</option>
+                            <option value="false">Disabled</option>
+                        </select>
+                    </label>
+                    <label class="input-group">
+                        <span>[WIFI] WiFi / Web</span>
+                        <select id="logWifi" class="input-select">
+                            <option value="true">Enabled</option>
+                            <option value="false">Disabled</option>
+                        </select>
+                    </label>
+                    <label class="input-group">
+                        <span>Show Serial In API Card</span>
+                        <select id="serialMirrorToCard" class="input-select">
+                            <option value="false">Disabled</option>
+                            <option value="true">Enabled</option>
+                        </select>
+                    </label>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Device Clock</h2>
+                <div class="diag-grid">
+                    <div class="diag-item">
+                        <span class="diag-label">Browser Time</span>
+                        <span class="diag-value" id="clockBrowserTime">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">Device Time</span>
+                        <span class="diag-value" id="clockDeviceTime">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">RTC Time</span>
+                        <span class="diag-value" id="clockRtcTime">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">RTC Status</span>
+                        <span class="diag-value" id="clockRtcStatus">--</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Bus Diagnostics</h2>
+                <div class="diag-grid">
+                    <div class="diag-item">
+                        <span class="diag-label">CAN Connection</span>
+                        <span class="diag-value" id="diagCanConnected">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">CAN Health</span>
+                        <span class="diag-value" id="diagCanHealthy">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">K-Line Connection</span>
+                        <span class="diag-value" id="diagKlineConnected">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">K-Line Health</span>
+                        <span class="diag-value" id="diagKlineHealthy">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">Ignition</span>
+                        <span class="diag-value" id="diagIgnition">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">Free Heap</span>
+                        <span class="diag-value"><span id="diagHeap">--</span> KB</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>FIS Diagnostics</h2>
+                <div class="diag-grid">
+                    <div class="diag-item">
+                        <span class="diag-label">FIS Boot Status</span>
+                        <span class="diag-value" id="diagFisBootReady">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">FIS Feedback</span>
+                        <span class="diag-value" id="diagFisFeedback">--</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Button Inputs</h2>
+                <div class="diag-grid">
+                    <div class="diag-item">
+                        <span class="diag-label">Up Input</span>
+                        <span class="diag-value" id="diagUpInput">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">Down Input</span>
+                        <span class="diag-value" id="diagDownInput">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">Reset Input</span>
+                        <span class="diag-value" id="diagResetInput">--</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Button Outputs</h2>
+                <div class="diag-grid">
+                    <div class="diag-item">
+                        <span class="diag-label">Up Output</span>
+                        <span class="diag-value" id="diagUpOutput">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">Down Output</span>
+                        <span class="diag-value" id="diagDownOutput">--</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">Reset Output</span>
+                        <span class="diag-value" id="diagResetOutput">--</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="app.js?v=1.0.0"></script>
+</body>
+</html>

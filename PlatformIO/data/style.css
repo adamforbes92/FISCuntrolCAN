@@ -1,0 +1,534 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #00d9ff;
+    --secondary: #ff6b35;
+    --background: #0f1419;
+    --surface: #1a1f26;
+    --surface-light: #252b34;
+    --text: #ffffff;
+    --text-dim: #8b949e;
+    --success: #2ea043;
+    --warning: #ffa657;
+    --danger: #f85149;
+    --border: #30363d;
+    --radius: 8px;
+    --radius-sm: 6px;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: var(--background);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+header {
+    background: var(--surface);
+    padding: 1rem;
+    border-bottom: 2px solid var(--primary);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.status-bar {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: var(--surface-light);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    border: 1px solid var(--border);
+}
+
+.status-badge.connected {
+    background: var(--success);
+    border-color: var(--success);
+    color: #ffffff;
+}
+
+.status-badge.error {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #ffffff;
+}
+
+.status-badge.serial-mode {
+    border-color: var(--secondary);
+    color: var(--secondary);
+}
+
+.status-badge.fis-mode {
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.nav-tabs {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+}
+
+.nav-tab {
+    flex: 1;
+    padding: 1rem;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.nav-tab:hover {
+    background: var(--surface-light);
+}
+
+.nav-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.page {
+    display: none;
+    padding: 1rem;
+}
+
+.page.active {
+    display: block;
+}
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.card h2 {
+    color: var(--primary);
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.hint {
+    color: var(--text-dim);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.mode-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+/* Space a button row away from a status grid directly above it (e.g. K-Line faults). */
+.diag-grid + .mode-grid {
+    margin-top: 1rem;
+}
+
+/* External Output card: consistent spacing between the mode selector and its
+   mode-specific controls (only one of which is visible at a time). */
+.diag-grid + .input-group {
+    margin-top: 1rem;
+}
+
+#extOutputManualControls,
+#extOutputRpmGroup,
+#extOutputSpeedGroup {
+    margin-top: 1rem;
+}
+
+.fis-preview {
+    margin-top: 1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: #050708;
+    padding: 1rem;
+}
+
+.fis-preview-title {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.fis-preview-body {
+    min-height: 11rem;
+    display: grid;
+    gap: 0.35rem;
+}
+
+.fis-line {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.95rem;
+    color: var(--text);
+    min-height: 1.2rem;
+}
+
+.mode-btn {
+    padding: 1rem;
+    background: var(--surface-light);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mode-btn:hover {
+    border-color: var(--primary);
+}
+
+.mode-btn.active {
+    background: var(--primary);
+    color: var(--background);
+    border-color: var(--primary);
+}
+
+.engagement-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.engagement-bar {
+    width: 100%;
+    height: 1.25rem;
+    background: var(--surface-light);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.engagement-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    transition: width 0.25s ease;
+}
+
+.gauge-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.gauge {
+    text-align: center;
+    background: var(--surface-light);
+    border-radius: var(--radius);
+    padding: 1rem;
+}
+
+.gauge-label {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.gauge-value {
+    color: var(--primary);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.gauge-value.mode-name {
+    font-size: 1.25rem;
+}
+
+.gauge-unit {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.input-select {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--surface-light);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.input-group input,
+.input-group select,
+.input-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--surface-light);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.input-select:focus,
+.input-group input:focus,
+.input-group select:focus,
+.input-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(0, 217, 255, 0.15);
+}
+
+select.input-select {
+    cursor: pointer;
+}
+
+textarea.input-select {
+    resize: vertical;
+    min-height: 3.5rem;
+    line-height: 1.4;
+}
+
+input[type="file"].input-select {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.gpio-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.input-group {
+    display: grid;
+    gap: 0.5rem;
+    color: var(--text-dim);
+}
+
+.toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.toggle input {
+    display: none;
+}
+
+.toggle-slider {
+    position: relative;
+    width: 48px;
+    height: 28px;
+    background: var(--surface-light);
+    border-radius: 14px;
+}
+
+.toggle-slider::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.toggle input:checked + .toggle-slider {
+    background: var(--primary);
+}
+
+.toggle input:checked + .toggle-slider::after {
+    transform: translateX(20px);
+}
+
+.btn-primary,
+.btn-secondary {
+    width: 100%;
+    padding: 0.9rem;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: var(--background);
+}
+
+.btn-primary:hover {
+    background: #00c0e6;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: var(--surface-light);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+    background: var(--surface);
+    border-color: var(--primary);
+}
+
+/* Consistent spacing when a button directly follows a control in a card */
+.card > .input-select + .btn-primary,
+.card > .input-select + .btn-secondary {
+    margin-top: 0.75rem;
+}
+
+.upload-stack {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.status-text {
+    margin-top: 0;
+}
+
+.rpm-slider-group input[type="range"] {
+    width: 100%;
+    height: 8px;
+    padding: 0;
+    background: var(--surface-light);
+    border: none;
+    border-radius: 4px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.diag-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.diag-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--surface-light);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+}
+
+.diag-label {
+    color: var(--text-dim);
+}
+
+.diag-value {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+@media (max-width: 640px) {
+    .mode-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .gauge-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Fault code list */
+.fault-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.fault-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: var(--surface-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+}
+
+.fault-code {
+    font-family: monospace;
+    font-size: 0.95rem;
+    color: var(--danger);
+    min-width: 54px;
+    font-weight: 700;
+}
+
+.fault-desc {
+    flex: 1;
+    color: var(--text-dim);
+}
+
+.fault-elab {
+    width: 100%;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    opacity: 0.7;
+}
+
+.fault-intermittent {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--secondary);
+    border: 1px solid var(--secondary);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+/* Active CAN card highlight */
+.mode-btn.active-card {
+    background: var(--primary);
+    color: var(--background);
+    border-color: var(--primary);
+    font-weight: 700;
+}
+
+.mode-btn.active-card:hover {
+    border-color: var(--primary);
+}
